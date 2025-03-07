@@ -27,6 +27,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadButton = document.getElementById('downloadIdCard');
     const saveButton = document.getElementById('saveIdCard');
     
+    // Añadir event listeners para los botones
+    if (createIdButton) {
+        createIdButton.addEventListener('click', function() {
+            // Mostrar el modal para crear cédula
+            idCardModal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevenir scroll
+        });
+    }
+    
+    if (viewIdButton) {
+        viewIdButton.addEventListener('click', function() {
+            // Mostrar la cédula existente
+            const idCardData = getIdCardData();
+            showExistingIdCard(idCardData);
+        });
+    }
+    
+    // Cerrar modales con los botones de cierre
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            idCardModal.style.display = 'none';
+            idCardPreview.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+        });
+    });
+    
+    // Cerrar modal con el botón de cancelar
+    if (cancelButton) {
+        cancelButton.addEventListener('click', function() {
+            idCardModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+        });
+    }
+    
     // Funciones auxiliares
     
     // Calcular edad basada en la fecha de nacimiento
@@ -255,6 +289,141 @@ function showExistingIdCard(idCardData) {
     // Show the preview modal
     idCardPreview.style.display = 'block';
     document.body.style.overflow = 'hidden'; // Prevent scroll
+}
+
+// Manejar la subida de fotos
+if (photoInput) {
+    photoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.innerHTML = `<img src="${e.target.result}" alt="Vista previa">`;
+                photoPreview.classList.add('has-photo');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// Procesar el formulario de cédula
+if (idCardForm) {
+    idCardForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Obtener datos del formulario
+        const formData = new FormData(idCardForm);
+        const firstName = formData.get('firstName');
+        const lastName = formData.get('lastName');
+        const birthDate = formData.get('birthDate');
+        const nationality = formData.get('nationality');
+        
+        // Calcular edad y generar RUT
+        const age = calculateAge(birthDate);
+        const rut = generateRUT();
+        
+        // Fecha de emisión (hoy)
+        const today = new Date();
+        const issueDate = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+        
+        // Obtener URL de la foto si existe
+        let photoUrl = '';
+        if (photoPreview.classList.contains('has-photo')) {
+            const img = photoPreview.querySelector('img');
+            if (img) {
+                photoUrl = img.src;
+            }
+        }
+        
+        // Obtener nombre de Discord del usuario
+        const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+        const discordName = userData.discordName || '';
+        
+        // Crear objeto con datos de la cédula
+        const idCardData = {
+            firstName,
+            lastName,
+            birthDate,
+            age,
+            nationality,
+            rut,
+            issueDate,
+            discordName,
+            photoUrl
+        };
+        
+        // Guardar datos en localStorage
+        saveIdCardData(idCardData);
+        
+        // Mostrar la cédula
+        showExistingIdCard(idCardData);
+        
+        // Cerrar el modal de creación
+        idCardModal.style.display = 'none';
+    });
+}
+
+// Botón para descargar la cédula
+if (downloadButton) {
+    downloadButton.addEventListener('click', function() {
+        // Asegurarse de que html2canvas esté cargado
+        if (!window.html2canvas) {
+            showNotification('Cargando herramientas de captura...', 'info');
+            loadHtml2Canvas();
+            setTimeout(() => {
+                downloadIdCard();
+            }, 1000);
+            return;
+        }
+        
+        downloadIdCard();
+    });
+}
+
+// Función para descargar la cédula como imagen
+function downloadIdCard() {
+    const idCard = document.querySelector('.id-card');
+    if (!idCard) {
+        showNotification('No se pudo encontrar la cédula para descargar', 'error');
+        return;
+    }
+    
+    showNotification('Generando imagen...', 'info');
+    
+    html2canvas(idCard, {
+        scale: 2,
+        logging: false,
+        useCORS: true
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'cedula-identidad-floridarp.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        showNotification('Cédula descargada correctamente', 'success');
+    }).catch(error => {
+        console.error('Error al generar la imagen:', error);
+        showNotification('Error al generar la imagen', 'error');
+    });
+}
+
+// Botón para guardar la cédula en la base de datos
+if (saveButton) {
+    saveButton.addEventListener('click', function() {
+        const idCardData = getIdCardData();
+        if (idCardData) {
+            sendToDatabase(idCardData);
+        } else {
+            showNotification('No hay datos de cédula para guardar', 'error');
+        }
+    });
+}
+
+// Verificar si el usuario ya tiene una cédula y actualizar la interfaz
+const existingIdCard = getIdCardData();
+if (existingIdCard) {
+    if (createIdButton) createIdButton.style.display = 'none';
+    if (viewIdButton) viewIdButton.style.display = 'flex';
 }
 
 // Añadir el corchete de cierre que falta para el evento DOMContentLoaded
