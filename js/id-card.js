@@ -307,10 +307,25 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.log('No se encontró el botón Crear Cédula en esta página');
     }
-    
     // Manejar la subida de fotos con mejor manejo de errores
     if (photoInput) {
         console.log('Configurando evento para input de foto');
+        // Asegurarse de que el campo sea visible y accesible
+        if (photoInput.parentElement) {
+            photoInput.parentElement.style.position = 'relative';
+            photoInput.style.opacity = '0.01';  // Casi invisible pero aún interactuable
+            photoInput.style.position = 'absolute';
+            photoInput.style.top = '0';
+            photoInput.style.left = '0';
+            photoInput.style.width = '100%';
+            photoInput.style.height = '100%';
+            photoInput.style.cursor = 'pointer';
+            photoInput.style.zIndex = '10';  // Asegurarse de que esté por encima
+            
+            // Quitar el atributo required para evitar problemas de validación
+            photoInput.removeAttribute('required');
+        }
+        
         photoInput.addEventListener('change', function(e) {
             console.log('Archivo seleccionado:', e.target.files);
             const file = e.target.files[0];
