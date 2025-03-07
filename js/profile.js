@@ -99,6 +99,97 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // NUEVO: Configurar el botón de cambiar foto
+    const changePhotoButton = document.getElementById('changePhotoButton');
+    const photoModal = document.getElementById('photoModal');
+    const photoForm = document.getElementById('photoForm');
+    const profilePhoto = document.getElementById('profilePhoto');
+    const newPhotoPreview = document.getElementById('newPhotoPreview');
+    
+    // Cargar foto de perfil si existe
+    loadProfilePhoto();
+    
+    // Evento para abrir el modal de cambio de foto
+    if (changePhotoButton) {
+        console.log('Configurando evento para botón Cambiar Foto');
+        changePhotoButton.addEventListener('click', function() {
+            console.log('Clic en Cambiar Foto');
+            if (photoModal) {
+                photoModal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevenir scroll
+            }
+        });
+    }
+    
+    // Previsualizar foto seleccionada
+    if (profilePhoto) {
+        profilePhoto.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newPhotoPreview.innerHTML = `<img src="${e.target.result}" alt="Vista previa">`;
+                    newPhotoPreview.classList.add('has-photo');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Procesar el formulario de foto
+    if (photoForm) {
+        photoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const file = profilePhoto.files[0];
+            if (!file) {
+                showNotification('Por favor selecciona una foto', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const photoUrl = e.target.result;
+                
+                // Guardar la foto
+                saveProfilePhoto(photoUrl);
+                
+                // Actualizar avatar en la página
+                const profileAvatar = document.getElementById('profileAvatar');
+                if (profileAvatar) {
+                    profileAvatar.src = photoUrl;
+                }
+                
+                // Cerrar el modal
+                photoModal.style.display = 'none';
+                document.body.style.overflow = 'auto'; // Restaurar scroll
+                
+                showNotification('Foto de perfil actualizada correctamente', 'success');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // NUEVO: Configurar eventos para cerrar modales
+    const closeModalButtons = document.querySelectorAll('.close-modal, .btn-cancel');
+    closeModalButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto'; // Restaurar scroll
+            }
+        });
+    });
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+        }
+    });
+    
     // Iniciar verificación de autenticación
     checkAuth();
 });
