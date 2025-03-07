@@ -45,4 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         toggleBtn.querySelector('i').className = 'fas fa-bars';
     }
+    
+    // Remove any auth-related code here if it exists
 });
