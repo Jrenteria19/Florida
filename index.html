@@ -43,9 +43,32 @@
                 <i class="fab fa-discord"></i>
                 <span>Quieres Unirte?</span>
             </a>
-            <!-- Remove the auth-buttons div completely -->
+            <!-- Add database connection test button -->
+            <a class='nav-link' href='#' onclick="testConnection(); return false;">
+                <i class="fas fa-database"></i>
+                <span>Probar Conexión DB</span>
+            </a>
         </div>
     </nav>
+
+    <!-- Add the test connection function -->
+    <script type="module">
+        window.testConnection = async function() {
+            try {
+                const { probarConexion } = await import('./src/api.js');
+                const resultado = await probarConexion();
+                
+                if (resultado) {
+                    alert('¡Conexión exitosa a la base de datos!');
+                } else {
+                    alert('No se pudo conectar a la base de datos. Revisa la consola para más detalles.');
+                }
+            } catch (error) {
+                console.error('Error al probar la conexión:', error);
+                alert('Error al probar la conexión. Revisa la consola para más detalles.');
+            }
+        }
+    </script>
     
     <!-- Botón de menú movido fuera del navbar -->
     <button class="menu-toggle">
