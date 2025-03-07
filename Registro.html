@@ -51,6 +51,7 @@
     </button>
     
     <!-- Contenido principal -->
+    <!-- Simplificar el formulario de registro eliminando referencias a perfiles -->
     <div class="registration-container">
         <div class="registration-form-wrapper">
             <div class="form-header">
@@ -65,13 +66,15 @@
                         <i class="fas fa-gamepad"></i> Nombre de Roblox
                     </label>
                     <input type="text" id="robloxName" name="robloxName" required>
+                    <div class="validation-message" id="robloxNameValidation"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="discordName">
                         <i class="fab fa-discord"></i> Nombre de Discord
                     </label>
-                    <input type="text" id="discordName" name="discordName" autocomplete="username" required>
+                    <input type="text" id="discordName" name="discordName" required>
+                    <div class="validation-message" id="discordNameValidation"></div>
                 </div>
                 
                 <div class="form-group">
@@ -79,10 +82,16 @@
                         <i class="fas fa-lock"></i> Contraseña
                     </label>
                     <div class="password-input-container">
-                        <input type="password" id="password" name="password" autocomplete="new-password" required>
-                        <button type="button" class="toggle-password" data-target="password">
+                        <input type="password" id="password" name="password" required>
+                        <button type="button" class="toggle-password" aria-label="Mostrar contraseña">
                             <i class="fas fa-eye"></i>
                         </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-meter">
+                            <div class="strength-meter-fill" id="strengthMeter"></div>
+                        </div>
+                        <div class="strength-text" id="strengthText">Seguridad de la contraseña</div>
                     </div>
                 </div>
                 
@@ -91,21 +100,24 @@
                         <i class="fas fa-lock"></i> Confirmar Contraseña
                     </label>
                     <div class="password-input-container">
-                        <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" required>
-                        <button type="button" class="toggle-password" data-target="confirmPassword">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <button type="button" class="toggle-password" aria-label="Mostrar contraseña">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
+                    <div class="validation-message" id="passwordMatchValidation"></div>
                 </div>
                 
-                <button type="submit" class="btn-register-submit">
+                <button type="submit" class="submit-button">
                     <i class="fas fa-user-plus"></i> Registrarse
                 </button>
                 
                 <div class="form-footer">
-                    <p>¿Ya tienes una cuenta? <a href="login.html">Iniciar Sesión</a></p>
+                    <p>¿Ya tienes una cuenta? <a href="login.html">Inicia Sesión</a></p>
                 </div>
             </form>
+            
+            <div class="form-message" id="registrationMessage"></div>
         </div>
     </div>
     

@@ -73,34 +73,47 @@
                 <p>Ingresa a tu cuenta de FloridaRP</p>
             </div>
             
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="robloxName">
-                        <i class="fas fa-user"></i> Nombre de Roblox
-                    </label>
-                    <input type="text" id="robloxName" name="robloxName" placeholder="Tu nombre en Roblox" autocomplete="username" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">
-                        <i class="fas fa-lock"></i> Contraseña
-                    </label>
-                    <div class="password-input-container">
-                        <input type="password" id="password" name="password" placeholder="Tu contraseña" autocomplete="current-password" required>
-                        <button type="button" class="toggle-password" data-target="password">
-                            <i class="fas fa-eye"></i>
-                        </button>
+            <!-- Simplificar el formulario de login eliminando referencias a perfiles -->
+            <div class="login-container">
+                <div class="login-form-wrapper">
+                    <div class="form-header">
+                        <img src="imgs/FloridaRp.png" alt="FloridaRP Logo" class="form-logo">
+                        <h2>Iniciar Sesión</h2>
+                        <p>Accede a FloridaRP</p>
                     </div>
+                    
+                    <form id="loginForm" class="login-form">
+                        <div class="form-group">
+                            <label for="robloxName">
+                                <i class="fas fa-gamepad"></i> Nombre de Roblox
+                            </label>
+                            <input type="text" id="robloxName" name="robloxName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">
+                                <i class="fas fa-lock"></i> Contraseña
+                            </label>
+                            <div class="password-input-container">
+                                <input type="password" id="password" name="password" required>
+                                <button type="button" class="toggle-password" aria-label="Mostrar contraseña">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                        </button>
+                        
+                        <div class="form-footer">
+                            <p>¿No tienes una cuenta? <a href="Registro.html">Regístrate</a></p>
+                        </div>
+                    </form>
+                    
+                    <div id="loginMessage" class="form-message"></div>
                 </div>
-                
-                <button type="submit" class="btn-login-submit">
-                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                </button>
-                
-                <div class="form-footer">
-                    <p>¿No tienes una cuenta? <a href="Registro.html">Registrarse</a></p>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
     <!-- Al final del body, justo antes de cerrar la etiqueta </body> -->
