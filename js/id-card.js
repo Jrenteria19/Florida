@@ -88,6 +88,17 @@ function saveIdCardData(data) {
     }
 }
 
+// Función para obtener los datos de la cédula del localStorage
+function getIdCardData() {
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    
+    if (userData && userData.isLoggedIn && userData.idCard) {
+        return userData.idCard;
+    }
+    
+    return null;
+}
+
 // Modificar el evento DOMContentLoaded para configurar los botones
 document.addEventListener('DOMContentLoaded', function() {
     // Referencias a elementos del DOM
@@ -105,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (viewIdButton) {
         viewIdButton.style.display = 'flex';
     }
-    
     // Configurar evento para el botón Crear Cédula
     if (createIdButton) {
         console.log('Configurando evento para botón Crear Cédula');
@@ -136,10 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
     }
-    
     // Configurar evento para el botón Ver Cédula
     if (viewIdButton) {
         viewIdButton.addEventListener('click', function() {
+            console.log('Clic en Ver Cédula');
+            
             // Verificar si hay datos locales primero
             const localIdCard = getIdCardData();
             
@@ -148,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showExistingIdCard(localIdCard);
                 return;
             }
-            
             // Si no hay datos locales, verificar en la base de datos
             checkIdCardInDatabase()
                 .then(result => {
@@ -312,4 +322,117 @@ function showExistingIdCard(idCardData) {
     // Show the preview modal
     idCardPreview.style.display = 'block';
     document.body.style.overflow = 'hidden'; // Prevent scroll
+}
+
+// Función para mostrar notificaciones
+function showNotification(message, type = 'info') {
+    // Verificar si ya existe una notificación
+    let notification = document.querySelector('.notification');
+    
+    // Si existe, eliminarla para mostrar la nueva
+    if (notification) {
+        notification.remove();
+    }
+    
+    // Crear nueva notificación
+    notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    // Icono según el tipo
+    let icon = 'info-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'error') icon = 'exclamation-circle';
+    if (type === 'warning') icon = 'exclamation-triangle';
+    
+    notification.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Agregar al DOM
+    document.body.appendChild(notification);
+    
+    // Mostrar con animación
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Ocultar después de 3 segundos
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+
+// ... código existente ...
+
+// Función para formatear la fecha
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+}
+
+// Función para calcular la edad
+function calculateAge(birthDate) {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    
+    return age;
+}
+
+// Función para generar un RUT aleatorio
+function generateRUT() {
+    const randomNum = Math.floor(10000000 + Math.random() * 90000000);
+    return `${randomNum}-${Math.floor(Math.random() * 10)}`;
+}
+
+// Función para enviar datos a la base de datos
+function sendToDatabase(idCardData) {
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    
+    if (!userData || !userData.isLoggedIn) {
+        showNotification('Debes iniciar sesión para guardar tu cédula', 'error');
+        return;
+    }
+    
+    showNotification('Guardando cédula...', 'info');
+    
+    fetch('/.netlify/functions/save-id-card', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            userId: userData.robloxName,
+            firstName: idCardData.firstName,
+            lastName: idCardData.lastName,
+            birthDate: idCardData.birthDate,
+            age: idCardData.age,
+            nationality: idCardData.nationality,
+            rut: idCardData.rut,
+            issueDate: idCardData.issueDate,
+            discordName: userData.discordName || idCardData.discordName,
+            hasPhoto: !!userData.avatarUrl
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Cédula guardada correctamente', 'success');
+        } else {
+            throw new Error(data.message || 'Error al guardar la cédula');
+        }
+    })
+    .catch(error => {
+        console.error('Error al guardar la cédula:', error);
+        showNotification('Error al guardar la cédula. Intenta de nuevo más tarde.', 'error');
+    });
 }
