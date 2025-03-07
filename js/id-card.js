@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Referencias a elementos del DOM
     const createIdButton = document.getElementById('createIdButton');
+    const viewIdButton = document.getElementById('viewIdButton');
     const idCardModal = document.getElementById('idCardModal');
     const idCardPreview = document.getElementById('idCardPreview');
     const closeButtons = document.querySelectorAll('.close-modal');
@@ -55,7 +56,6 @@ document.addEventListener('DOMContentLoaded', function() {
             photoInput.click();
         });
     }
-    
     // Manejar envío del formulario
     if (idCardForm) {
         idCardForm.addEventListener('submit', function(e) {
@@ -68,12 +68,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Obtener datos del formulario
-            const fullName = document.getElementById('fullName').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
             const birthDate = document.getElementById('birthDate').value;
             const nationality = document.getElementById('nationality').value;
             
-            // Generar ID único
-            const idNumber = generateIdNumber();
+            // Calcular edad basada en la fecha de nacimiento
+            const age = calculateAge(birthDate);
+            
+            // Generar RUT único
+            const rut = generateRUT();
             
             // Obtener fecha actual para la emisión
             const issueDate = new Date().toLocaleDateString('es-ES', {
@@ -82,12 +86,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 year: 'numeric'
             });
             
+            // Obtener nombre de Discord del usuario
+            const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+            const discordName = userData.discordName || 'No disponible';
+            
             // Mostrar datos en la previsualización
-            document.getElementById('idCardName').textContent = fullName;
+            document.getElementById('idCardName').textContent = `${firstName} ${lastName}`;
             document.getElementById('idCardBirthDate').textContent = formatDate(birthDate);
+            document.getElementById('idCardAge').textContent = `${age} años`;
             document.getElementById('idCardNationality').textContent = nationality;
-            document.getElementById('idCardNumber').textContent = idNumber;
+            document.getElementById('idCardRut').textContent = rut;
             document.getElementById('idCardIssueDate').textContent = issueDate;
+            document.getElementById('idCardSignature').textContent = discordName;
             
             // Mostrar foto en la previsualización
             const reader = new FileReader();
@@ -98,11 +108,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Guardar datos en localStorage
             saveIdCardData({
-                fullName,
+                firstName,
+                lastName,
                 birthDate,
+                age,
                 nationality,
-                idNumber,
+                rut,
                 issueDate,
+                discordName,
                 photoUrl: null // Se actualizará después de guardar la imagen
             });
             
@@ -111,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function() {
             idCardPreview.style.display = 'block';
         });
     }
-    
     // Botón para descargar la cédula
     if (downloadButton) {
         downloadButton.addEventListener('click', function() {
@@ -134,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
     // Botón para guardar la cédula
     if (saveButton) {
         saveButton.addEventListener('click', function() {
@@ -162,6 +173,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Guardar en localStorage
                     saveIdCardData(idCardData);
                     
+                    // Enviar datos a la base de datos
+                    sendToDatabase(idCardData);
+                    
                     // Mostrar mensaje de éxito
                     showNotification('Cédula guardada correctamente', 'success');
                     
@@ -179,111 +193,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar cédula si existe
     loadIdCard();
     
-    // Funciones auxiliares
-    
-    // Generar número de ID único
-    function generateIdNumber() {
-        // Formato: FL-XXXXX-YYYY (donde XXXXX es un número aleatorio y YYYY es el año actual)
-        const randomNum = Math.floor(10000 + Math.random() * 90000);
-        const year = new Date().getFullYear();
-        return `FL-${randomNum}-${year}`;
-    }
-    
-    // Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
-    function formatDate(dateString) {
-        if (!dateString) return '';
+    // Función para mostrar la cédula existente
+    function showExistingIdCard(idCardData) {
+        // Mostrar datos en la previsualización
+        document.getElementById('idCardName').textContent = `${idCardData.firstName} ${idCardData.lastName}`;
+        document.getElementById('idCardBirthDate').textContent = formatDate(idCardData.birthDate);
+        document.getElementById('idCardAge').textContent = `${idCardData.age} años`;
+        document.getElementById('idCardNationality').textContent = idCardData.nationality;
+        document.getElementById('idCardRut').textContent = idCardData.rut;
+        document.getElementById('idCardIssueDate').textContent = idCardData.issueDate;
         
-        const parts = dateString.split('-');
-        if (parts.length !== 3) return dateString;
-        
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-    
-    // Guardar datos de la cédula en localStorage
-    function saveIdCardData(data) {
-        const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
-        
-        if (userData && userData.isLoggedIn) {
-            userData.idCard = data;
-            localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+        // Mostrar foto en la previsualización si existe
+        if (idCardData.photoUrl) {
+            document.getElementById('idCardPhoto').innerHTML = `<img src="${idCardData.photoUrl}" alt="Foto de ID">`;
         }
-    }
-    
-    // Obtener datos de la cédula del localStorage
-    function getIdCardData() {
-        const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
-        return (userData && userData.idCard) ? userData.idCard : null;
-    }
-    
-    // Ocultar el botón de crear cédula
-    function hideCreateIdButton() {
-        const createIdButton = document.getElementById('createIdButton');
-        if (createIdButton) {
-            createIdButton.style.display = 'none';
-        }
-    }
-    
-    // Cargar cédula si existe
-    function loadIdCard() {
-        const idCardData = getIdCardData();
         
-        if (idCardData) {
-            // Ocultar el botón de crear cédula ya que el usuario ya tiene una
-            hideCreateIdButton();
-            
-            // Agregar botón para ver cédula en el perfil
-            const profileActions = document.querySelector('.profile-actions');
-            
-            if (profileActions && !document.getElementById('viewIdButton')) {
-                const viewIdButton = document.createElement('button');
-                viewIdButton.id = 'viewIdButton';
-                viewIdButton.className = 'btn-view-id';
-                viewIdButton.innerHTML = '<i class="fas fa-id-card"></i> Ver Cédula';
-                
-                // Insertar después del botón de crear cédula
-                const createIdButton = document.getElementById('createIdButton');
-                if (createIdButton) {
-                    profileActions.insertBefore(viewIdButton, createIdButton.nextSibling);
-                } else {
-                    profileActions.appendChild(viewIdButton);
-                }
-                
-                // Agregar estilos para el botón
-                if (!document.getElementById('view-id-button-styles')) {
-                    const style = document.createElement('style');
-                    style.id = 'view-id-button-styles';
-                    style.textContent = `
-                        .btn-view-id {
-                            padding: 0.8rem 2rem;
-                            border-radius: 10px;
-                            border: none;
-                            background: linear-gradient(45deg, #ff9800, #f57c00);
-                            color: white;
-                            font-weight: 600;
-                            font-size: 1rem;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        }
-                        .btn-view-id:hover {
-                            transform: translateY(-3px);
-                            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-                            background: linear-gradient(45deg, #fb8c00, #ef6c00);
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-                
-                // Agregar evento para mostrar la cédula
-                viewIdButton.addEventListener('click', function() {
-                    showIdCard(idCardData);
-                });
-            }
-        }
+        // Mostrar modal de previsualización
+        idCardPreview.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevenir scroll
     }
-    
     // Mostrar cédula existente
     function showIdCard(data) {
         // Mostrar datos en la previsualización
@@ -302,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
         idCardPreview.style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
-    
     // Mostrar notificación
     function showNotification(message, type = 'info') {
         // Crear elemento de notificación

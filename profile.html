@@ -94,6 +94,9 @@
                     <button id="createIdButton" class="btn-create-id">
                         <i class="fas fa-id-card"></i> Crear Cédula
                     </button>
+                    <button id="viewIdButton" class="btn-view-id" style="display: none;">
+                        <i class="fas fa-id-card"></i> Ver Cédula
+                    </button>
                 </div>
             </div>
         </div>
@@ -108,9 +111,16 @@
             </div>
             <div class="modal-body">
                 <form id="idCardForm">
-                    <div class="form-group">
-                        <label for="fullName">Nombres y Apellidos</label>
-                        <input type="text" id="fullName" name="fullName" required>
+                    <div class="name-fields">
+                        <div class="form-group">
+                            <label for="firstName">Nombres</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastName">Apellidos</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -172,12 +182,16 @@
                                 <span class="id-value" id="idCardBirthDate"></span>
                             </div>
                             <div class="id-field">
+                                <span class="id-label">Edad:</span>
+                                <span class="id-value" id="idCardAge"></span>
+                            </div>
+                            <div class="id-field">
                                 <span class="id-label">Nacionalidad:</span>
                                 <span class="id-value" id="idCardNationality"></span>
                             </div>
                             <div class="id-field">
-                                <span class="id-label">ID:</span>
-                                <span class="id-value" id="idCardNumber"></span>
+                                <span class="id-label">RUT:</span>
+                                <span class="id-value" id="idCardRut"></span>
                             </div>
                             <div class="id-field">
                                 <span class="id-label">Fecha de Emisión:</span>
