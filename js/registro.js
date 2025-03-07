@@ -190,21 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show loading message
             showMessage('Procesando registro...', false);
             
-            // Check if Roblox username already exists
-            const robloxExists = await checkUsernameExists('roblox', robloxName);
-            if (robloxExists) {
-                showMessage('⚠️ Este nombre de usuario de Roblox ya está registrado');
-                return;
-            }
-            
-            // Check if Discord username already exists
-            const discordExists = await checkUsernameExists('discord', discordName);
-            if (discordExists) {
-                showMessage('⚠️ Este nombre de usuario de Discord ya está registrado');
-                return;
-            }
-            
-            // Register the user
+            // Enviar directamente a la base de datos sin verificación previa
             const response = await fetch('/.netlify/functions/register-user', {
                 method: 'POST',
                 headers: {
@@ -218,19 +204,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-                console.error('Registration error:', errorData);
+                const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
+                console.error('Error de registro:', errorData);
                 showMessage(`❌ Error al registrar: ${errorData.message || 'Error del servidor'}`);
                 return;
             }
+            
             const result = await response.json();
             
             if (result.success) {
-                showMessage('🎉 Registro exitoso! Redirigiendo al inicio de sesión...', false);
+                // Guardar datos del usuario en localStorage para gestión de sesión
+                const userData = {
+                    id: result.userId,
+                    robloxName: robloxName,
+                    discordName: discordName,
+                    isLoggedIn: true
+                };
                 
-                // Redirect after a short delay
+                localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+                
+                showMessage('🎉 Registro exitoso! Redirigiendo a la página principal...', false);
+                
+                // Redireccionar a la página principal después de un breve retraso
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = 'index.html';
                 }, 2000);
             } else {
                 showMessage(`❌ Error: ${result.message}`);

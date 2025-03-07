@@ -67,7 +67,7 @@ exports.handler = async function(event, context) {
             ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false
         });
         
-        // Check if the usuario table exists, if not create it
+        // Verificar si la tabla usuario existe, si no crearla
         try {
             await connection.execute(`
                 CREATE TABLE IF NOT EXISTS usuario (
@@ -79,19 +79,19 @@ exports.handler = async function(event, context) {
                 )
             `);
         } catch (tableError) {
-            console.error('Error creating table:', tableError);
+            console.error('Error al crear tabla:', tableError);
             return {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({ 
                     success: false, 
-                    message: 'Error creating database table', 
+                    message: 'Error al crear tabla en la base de datos', 
                     error: tableError.message 
                 })
             };
         }
         
-        // Check if Roblox username already exists
+        // Verificar si el nombre de Roblox ya existe
         const [robloxRows] = await connection.execute(
             'SELECT COUNT(*) as count FROM usuario WHERE roblox_name = ?',
             [robloxName]
@@ -108,7 +108,7 @@ exports.handler = async function(event, context) {
             };
         }
         
-        // Check if Discord username already exists
+        // Verificar si el nombre de Discord ya existe
         const [discordRows] = await connection.execute(
             'SELECT COUNT(*) as count FROM usuario WHERE discord_name = ?',
             [discordName]
@@ -125,11 +125,11 @@ exports.handler = async function(event, context) {
             };
         }
         
-        // Hash the password
+        // Hashear la contraseña
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         
-        // Insert the new user
+        // Insertar el nuevo usuario
         const [result] = await connection.execute(
             'INSERT INTO usuario (roblox_name, discord_name, password, created_at) VALUES (?, ?, ?, NOW())',
             [robloxName, discordName, hashedPassword]
