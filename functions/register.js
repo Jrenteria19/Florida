@@ -1,70 +1,104 @@
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcryptjs');
 
 exports.handler = async (event, context) => {
-  // Asegurarse de que es una solicitud POST
+  // Enable CORS for frontend requests
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  };
+
+  // Handle preflight OPTIONS request
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
+  }
+
+  // Ensure this is a POST request
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
+      headers,
       body: JSON.stringify({ success: false, message: 'Método no permitido' })
     };
   }
 
   try {
-    // Obtener datos del cuerpo de la solicitud
+    // Parse request body
     const data = JSON.parse(event.body);
     
-    // Validar campos requeridos
+    // Validate required fields
     if (!data.robloxUsername || !data.discordUsername || !data.password) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ success: false, message: 'Faltan campos requeridos' })
       };
     }
 
-    // Crear conexión a la base de datos
+    // TiDB Cloud connection configuration
     const connection = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT,
-      user: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
+      host: process.env.TIDB_HOST,
+      port: process.env.TIDB_PORT || 4000,
+      user: process.env.TIDB_USER,
+      password: process.env.TIDB_PASSWORD,
+      database: process.env.TIDB_DATABASE,
+      ssl: {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: true
+      }
     });
 
-    // Verificar si el usuario ya existe
-    const [rows] = await connection.execute(
-      'SELECT * FROM ciudadanos WHERE roblox_username = ?',
+    console.log('Connected to TiDB Cloud');
+
+    // Check if user already exists
+    const [existingUsers] = await connection.execute(
+      'SELECT * FROM usuarios WHERE roblox_username = ?',
       [data.robloxUsername]
     );
 
-    if (rows.length > 0) {
+    if (existingUsers.length > 0) {
       await connection.end();
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ success: false, message: 'Este usuario de Roblox ya está registrado' })
       };
     }
 
-    // Encriptar la contraseña
-    const bcrypt = require('bcryptjs');
+    // Hash password
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    // Insertar nuevo usuario
+    // Insert new user
     await connection.execute(
-      'INSERT INTO ciudadanos (roblox_username, discord_username, password, fecha_registro) VALUES (?, ?, ?, NOW())',
+      'INSERT INTO usuarios (roblox_username, discord_username, password, fecha_registro) VALUES (?, ?, ?, NOW())',
       [data.robloxUsername, data.discordUsername, hashedPassword]
     );
 
     await connection.end();
+    console.log('User registered successfully');
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true, message: 'Usuario registrado correctamente' })
+      headers,
+      body: JSON.stringify({ 
+        success: true, 
+        message: 'Usuario registrado correctamente' 
+      })
     };
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in registration function:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ success: false, message: 'Error del servidor: ' + error.message })
+      headers,
+      body: JSON.stringify({ 
+        success: false, 
+        message: 'Error del servidor: ' + error.message 
+      })
     };
   }
 };

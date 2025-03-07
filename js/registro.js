@@ -181,7 +181,14 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(userData)
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Error en la respuesta del servidor: ' + response.status);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             // Restablecer botón
             submitButton.innerHTML = originalButtonText;
@@ -190,6 +197,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Mostrar modal de éxito
                 const successModal = document.getElementById('successModal');
+                const successMessage = document.querySelector('.success-content p');
+                successMessage.textContent = 'Tu cuenta ha sido registrada correctamente. Serás redirigido al inicio de sesión.';
                 successModal.classList.add('show');
                 
                 // Redireccionar después de 3 segundos
@@ -197,8 +206,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.href = 'login.html';
                 }, 3000);
             } else {
-                // Mostrar mensaje de error
-                alert('Error: ' + data.message);
+                // Mostrar mensaje de error en el modal
+                const successModal = document.getElementById('successModal');
+                const successTitle = document.querySelector('.success-content h3');
+                const successIcon = document.querySelector('.success-content i');
+                const successMessage = document.querySelector('.success-content p');
+                
+                successTitle.textContent = 'Error en el registro';
+                successIcon.className = 'fas fa-times-circle';
+                successIcon.style.color = 'var(--error-color)';
+                successMessage.textContent = data.message || 'No se pudo completar el registro. Por favor, intenta nuevamente.';
+                
+                successModal.classList.add('show');
+                
+                // Cerrar el modal después de 4 segundos
+                setTimeout(function() {
+                    successModal.classList.remove('show');
+                }, 4000);
             }
         })
         .catch(error => {
@@ -206,8 +230,25 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = originalButtonText;
             submitButton.disabled = false;
             
-            // Mostrar mensaje de error
-            alert('Error al conectar con el servidor: ' + error.message);
+            // Mostrar mensaje de error en el modal
+            const successModal = document.getElementById('successModal');
+            const successTitle = document.querySelector('.success-content h3');
+            const successIcon = document.querySelector('.success-content i');
+            const successMessage = document.querySelector('.success-content p');
+            
+            successTitle.textContent = 'Error de conexión';
+            successIcon.className = 'fas fa-wifi';
+            successIcon.style.color = 'var(--error-color)';
+            successMessage.textContent = error.message || 'No se pudo conectar con el servidor. Por favor, verifica tu conexión e intenta nuevamente.';
+            
+            successModal.classList.add('show');
+            
+            // Cerrar el modal después de 4 segundos
+            setTimeout(function() {
+                successModal.classList.remove('show');
+            }, 4000);
+            
+            console.error('Error al conectar con el servidor:', error);
         });
     }
     // Add input event listeners for real-time validation
