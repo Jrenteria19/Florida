@@ -4,13 +4,7 @@ exports.handler = async function(event, context) {
   context.callbackWaitsForEmptyEventLoop = false;
   
   try {
-    console.log('Variables de entorno:', {
-      host: process.env.TIDB_HOST,
-      port: process.env.TIDB_PORT,
-      user: process.env.TIDB_USER,
-      database: process.env.TIDB_DATABASE
-    });
-    
+    console.log('Iniciando prueba de conexión...');
     const connection = await createConnection();
     
     const [result] = await connection.execute('SELECT 1 as test');
@@ -41,7 +35,14 @@ exports.handler = async function(event, context) {
       },
       body: JSON.stringify({ 
         success: false, 
-        error: `Error de conexión: ${error.message}`
+        error: error.message,
+        envCheck: {
+          TIDB_HOST_exists: !!process.env.TIDB_HOST,
+          TIDB_PORT_exists: !!process.env.TIDB_PORT,
+          TIDB_USER_exists: !!process.env.TIDB_USER,
+          TIDB_PASSWORD_exists: !!process.env.TIDB_PASSWORD,
+          TIDB_DATABASE_exists: !!process.env.TIDB_DATABASE
+        }
       })
     };
   }

@@ -15,17 +15,18 @@ const dbConfig = {
 
 async function createConnection() {
   try {
-    // Log environment variables (without exposing sensitive data)
-    console.log('Environment check:', {
-      host_exists: !!process.env.TIDB_HOST,
-      port_exists: !!process.env.TIDB_PORT,
-      user_exists: !!process.env.TIDB_USER,
-      password_exists: !!process.env.TIDB_PASSWORD,
-      database_exists: !!process.env.TIDB_DATABASE
-    });
-    
-    if (!process.env.TIDB_HOST || !process.env.TIDB_USER || !process.env.TIDB_PASSWORD || !process.env.TIDB_DATABASE) {
-      throw new Error('Faltan variables de entorno necesarias para la conexión');
+    // Check if required environment variables are present
+    if (!process.env.TIDB_HOST) {
+      throw new Error('Variable de entorno TIDB_HOST no está definida');
+    }
+    if (!process.env.TIDB_USER) {
+      throw new Error('Variable de entorno TIDB_USER no está definida');
+    }
+    if (!process.env.TIDB_PASSWORD) {
+      throw new Error('Variable de entorno TIDB_PASSWORD no está definida');
+    }
+    if (!process.env.TIDB_DATABASE) {
+      throw new Error('Variable de entorno TIDB_DATABASE no está definida');
     }
     
     console.log('Intentando conectar a:', process.env.TIDB_HOST);
