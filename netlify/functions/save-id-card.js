@@ -62,13 +62,16 @@ exports.handler = async function(event, context) {
     // Connect to database
     let connection;
     try {
-        // Conexión a la base de datos usando db-connect.js
-        const dbConnect = require('./db-connect');
-        connection = await dbConnect();
-        
-        if (!connection) {
-            throw new Error('No se pudo establecer conexión con la base de datos');
-        }
+        // Conexión directa a la base de datos sin usar db-connect.js
+        connection = await mysql.createConnection({
+            host: process.env.TIDB_HOST,
+            port: process.env.TIDB_PORT || 4000,
+            user: process.env.TIDB_USER,
+            password: process.env.TIDB_PASSWORD,
+            database: process.env.TIDB_DATABASE,
+            ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false,
+            connectTimeout: 60000 // 60 segundos
+        });
         
         console.log('Conexión establecida correctamente');
         

@@ -286,7 +286,7 @@ function compressImage(dataUrl, maxWidth, quality) {
             
             console.log(`Tamaño de imagen comprimida: ${sizeInKB.toFixed(2)} KB`);
             
-            if (sizeInKB > 500) {
+            if (sizeInKB > 100) {
                 // Si sigue siendo grande, comprimir más
                 return compressImage(compressedDataUrl, maxWidth * 0.8, quality * 0.8)
                     .then(resolve)

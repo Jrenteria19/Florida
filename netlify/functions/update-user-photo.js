@@ -58,7 +58,7 @@ exports.handler = async function(event, context) {
     }
     
     // Verificar si la URL de la foto es demasiado larga
-    if (photoUrl.length > 1000000) {  // Limitar a ~1MB
+    if (photoUrl.length > 500000) {  // Limitar a ~500KB
         return {
             statusCode: 400,
             headers,
@@ -71,13 +71,16 @@ exports.handler = async function(event, context) {
     
     let connection;
     try {
-        // Conexión a la base de datos usando db-connect.js
-        const dbConnect = require('./db-connect');
-        connection = await dbConnect();
-        
-        if (!connection) {
-            throw new Error('No se pudo establecer conexión con la base de datos');
-        }
+        // Conexión directa a la base de datos sin usar db-connect.js
+        connection = await mysql.createConnection({
+            host: process.env.TIDB_HOST,
+            port: process.env.TIDB_PORT || 4000,
+            user: process.env.TIDB_USER,
+            password: process.env.TIDB_PASSWORD,
+            database: process.env.TIDB_DATABASE,
+            ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false,
+            connectTimeout: 60000 // 60 segundos
+        });
         
         console.log('Conexión establecida correctamente');
         
@@ -104,14 +107,34 @@ exports.handler = async function(event, context) {
         console.log('Resultado de la actualización:', result);
         
         if (result.affectedRows === 0) {
-            return {
-                statusCode: 404,
-                headers,
-                body: JSON.stringify({ 
-                    success: false, 
-                    message: 'Usuario no encontrado' 
-                })
-            };
+            // Si no se actualizó ninguna fila, intentar insertar el avatar en el usuario existente
+            const [checkUser] = await connection.execute(
+                'SELECT id FROM usuario WHERE roblox_name = ?',
+                [userId]
+            );
+            
+            if (checkUser.length > 0) {
+                // El usuario existe pero no se actualizó (posiblemente un problema con la columna avatar_url)
+                console.log('Usuario encontrado pero no se actualizó. Intentando método alternativo.');
+                await connection.execute(
+                    'ALTER TABLE usuario MODIFY COLUMN avatar_url LONGTEXT',
+                    []
+                );
+                
+                await connection.execute(
+                    'UPDATE usuario SET avatar_url = ? WHERE roblox_name = ?',
+                    [photoUrl, userId]
+                );
+            } else {
+                return {
+                    statusCode: 404,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: false, 
+                        message: 'Usuario no encontrado' 
+                    })
+                };
+            }
         }
         
         // También actualizar la foto en la tabla id_cards si existe
