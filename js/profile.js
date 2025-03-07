@@ -169,7 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
             reader.readAsDataURL(file);
         });
     }
-    
     // NUEVO: Configurar eventos para cerrar modales
     const closeModalButtons = document.querySelectorAll('.close-modal, .btn-cancel');
     closeModalButtons.forEach(button => {
@@ -181,7 +180,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
     // Cerrar modal al hacer clic fuera del contenido
     window.addEventListener('click', function(event) {
         if (event.target.classList.contains('modal')) {
@@ -189,10 +187,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = 'auto'; // Restaurar scroll
         }
     });
-    
     // Iniciar verificación de autenticación
     checkAuth();
 });
+// Función para guardar la foto de perfil
 function saveProfilePhoto(photoUrl) {
     const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
     

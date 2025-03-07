@@ -8,6 +8,7 @@ exports.handler = async function(event, context) {
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
     
+    // Manejar solicitudes preflight CORS
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
@@ -16,29 +17,42 @@ exports.handler = async function(event, context) {
         };
     }
     
+    // Verificar método HTTP
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            headers,
+            body: JSON.stringify({ success: false, message: 'Método no permitido' })
+        };
+    }
+    
+    // Parsear el cuerpo de la solicitud
     let requestBody;
     try {
         requestBody = JSON.parse(event.body);
     } catch (error) {
+        console.error('Error al parsear el cuerpo de la solicitud:', error);
         return {
             statusCode: 400,
             headers,
             body: JSON.stringify({ 
                 success: false, 
-                message: 'Invalid request body' 
+                message: 'Formato de solicitud inválido',
+                error: error.message
             })
         };
     }
     
     const { userId, photoUrl } = requestBody;
     
+    // Validar datos requeridos
     if (!userId || !photoUrl) {
         return {
             statusCode: 400,
             headers,
             body: JSON.stringify({ 
                 success: false, 
-                message: 'Se requiere userId y photoUrl' 
+                message: 'Se requieren userId y photoUrl' 
             })
         };
     }
@@ -55,13 +69,25 @@ exports.handler = async function(event, context) {
             ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false
         });
         
-        // Verificar si el usuario existe
-        const [userRows] = await connection.execute(
-            'SELECT id FROM usuario WHERE roblox_name = ?',
-            [userId]
+        // Verificar si existe la tabla usuario
+        await connection.execute(`
+            CREATE TABLE IF NOT EXISTS usuario (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                roblox_name VARCHAR(100) NOT NULL UNIQUE,
+                discord_name VARCHAR(100),
+                password VARCHAR(255) NOT NULL,
+                avatar_url LONGTEXT,
+                registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        // Actualizar la foto del usuario
+        const [result] = await connection.execute(
+            'UPDATE usuario SET avatar_url = ? WHERE roblox_name = ?',
+            [photoUrl, userId]
         );
         
-        if (userRows.length === 0) {
+        if (result.affectedRows === 0) {
             return {
                 statusCode: 404,
                 headers,
@@ -72,19 +98,34 @@ exports.handler = async function(event, context) {
             };
         }
         
-        const userIdNumber = userRows[0].id;
-        
-        // Actualizar la foto del usuario
-        await connection.execute(
-            'UPDATE usuario SET avatar_url = ? WHERE id = ?',
-            [photoUrl, userIdNumber]
-        );
-        
-        // Verificar si el usuario tiene una cédula y actualizar la foto allí también
-        await connection.execute(
-            'UPDATE id_cards SET photo_url = ?, has_photo = TRUE WHERE user_id = ?',
-            [photoUrl, userId]
-        );
+        // También actualizar la foto en la tabla id_cards si existe
+        try {
+            await connection.execute(`
+                CREATE TABLE IF NOT EXISTS id_cards (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id VARCHAR(100) NOT NULL,
+                    first_name VARCHAR(100) NOT NULL,
+                    last_name VARCHAR(100) NOT NULL,
+                    birth_date VARCHAR(20) NOT NULL,
+                    age INT NOT NULL,
+                    nationality VARCHAR(100) NOT NULL,
+                    rut VARCHAR(50) NOT NULL,
+                    issue_date VARCHAR(20) NOT NULL,
+                    discord_name VARCHAR(100),
+                    has_photo BOOLEAN DEFAULT FALSE,
+                    photo_url LONGTEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            
+            await connection.execute(
+                'UPDATE id_cards SET photo_url = ?, has_photo = TRUE WHERE user_id = ?',
+                [photoUrl, userId]
+            );
+        } catch (idCardError) {
+            console.log('Nota: No se pudo actualizar la foto en la cédula:', idCardError.message);
+            // No fallamos la operación principal si esto falla
+        }
         
         return {
             statusCode: 200,
