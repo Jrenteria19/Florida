@@ -160,7 +160,7 @@
 /* Discord link special styling */
 .discord-link {
     background: linear-gradient(45deg, #2d1b4e, #3c1053);
-    margin-top: auto;
+    margin-top: 1px;
     margin-bottom: 20px;
     border-left: 3px solid #9c27b0;
 }
