@@ -114,29 +114,58 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Configurando evento para botón Crear Cédula');
         createIdButton.addEventListener('click', function() {
             console.log('Clic en Crear Cédula');
+            // Solo mostrar el modal, no guardar automáticamente
+            if (idCardModal) {
+                idCardModal.style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Prevenir scroll
+                
+                // Cargar datos del usuario en el formulario si existen
+                loadUserDataToForm();
+            }
+        });
+    }
+    // Manejar el envío del formulario de cédula
+    if (idCardForm) {
+        idCardForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Formulario de cédula enviado');
             
-            // Verificar si ya existe una cédula en la base de datos
-            checkIdCardInDatabase()
-                .then(result => {
-                    if (result.exists) {
-                        // Ya tiene cédula, mostrar mensaje y sugerir ver cédula
-                        showNotification('Ya tienes una cédula registrada. Puedes verla con el botón "Ver Cédula".', 'info');
-                    } else {
-                        // No tiene cédula, mostrar el modal para crear
-                        if (idCardModal) {
-                            idCardModal.style.display = 'block';
-                            document.body.style.overflow = 'hidden'; // Prevenir scroll
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al verificar cédula:', error);
-                    // En caso de error, permitir crear de todos modos
-                    if (idCardModal) {
-                        idCardModal.style.display = 'block';
-                        document.body.style.overflow = 'hidden';
-                    }
-                });
+            // Recopilar datos del formulario
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const nationality = document.getElementById('nationality').value;
+            const rut = document.getElementById('rut').value;
+            
+            // Validar campos requeridos
+            if (!firstName || !lastName || !birthDate || !nationality || !rut) {
+                showNotification('Por favor completa todos los campos requeridos', 'error');
+                return;
+            }
+            
+            // Calcular edad
+            const age = calculateAge(birthDate);
+            
+            // Obtener fecha actual para la emisión
+            const issueDate = new Date().toISOString().split('T')[0];
+            
+            // Crear objeto de cédula
+            const idCardData = {
+                firstName,
+                lastName,
+                birthDate,
+                age,
+                nationality,
+                rut,
+                issueDate
+            };
+            
+            // Guardar en localStorage y enviar a la base de datos
+            saveIdCard(idCardData);
+            
+            // Cerrar el modal
+            idCardModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restaurar scroll
         });
     }
     // Configurar evento para el botón Ver Cédula
@@ -428,4 +457,35 @@ function sendToDatabase(idCardData) {
         console.error('Error al guardar la cédula:', error);
         showNotification('Error al guardar la cédula. Intenta de nuevo más tarde.', 'error');
     }); // Close the sendToDatabase fetch request
+}
+
+// Función para guardar la cédula
+function saveIdCard(idCardData) {
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    
+    if (userData && userData.isLoggedIn) {
+        // Mostrar notificación de procesamiento
+        showNotification('Guardando cédula...', 'info');
+        
+        // Añadir datos de usuario
+        idCardData.userId = userData.robloxName;
+        idCardData.discordName = userData.discordName || '';
+        
+        // Añadir foto si existe
+        if (userData.avatarUrl) {
+            idCardData.photoUrl = userData.avatarUrl;
+            idCardData.hasPhoto = true;
+        } else {
+            idCardData.hasPhoto = false;
+        }
+        
+        // Guardar en localStorage
+        userData.idCard = idCardData;
+        localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+        
+        // Enviar a la base de datos
+        sendToDatabase(idCardData);
+    } else {
+        showNotification('Debes iniciar sesión para guardar tu cédula', 'error');
+    }
 }

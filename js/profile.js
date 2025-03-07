@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'login.html';
         }
     }
-    
     // Mostrar datos del usuario en la página
     function displayUserData(user) {
         const profileName = document.getElementById('profileName');
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
             profileDate.textContent = formattedDate;
         }
     }
-    
     // Configurar el botón de cerrar sesión
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) {
@@ -98,17 +96,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 1500);
         });
     }
-    
     // NUEVO: Configurar el botón de cambiar foto
     const changePhotoButton = document.getElementById('changePhotoButton');
     const photoModal = document.getElementById('photoModal');
     const photoForm = document.getElementById('photoForm');
-    const profilePhoto = document.getElementById('profilePhoto');
     const newPhotoPreview = document.getElementById('newPhotoPreview');
-    
     // Cargar foto de perfil si existe
     loadProfilePhoto();
-    
     // Evento para abrir el modal de cambio de foto
     if (changePhotoButton) {
         console.log('Configurando evento para botón Cambiar Foto');
@@ -120,59 +114,66 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Previsualizar foto seleccionada
-    if (profilePhoto) {
-        profilePhoto.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    newPhotoPreview.innerHTML = `<img src="${e.target.result}" alt="Vista previa">`;
-                    newPhotoPreview.classList.add('has-photo');
-                };
-                reader.readAsDataURL(file);
+    // Previsualizar foto desde URL
+    const photoUrlInput = document.getElementById('photoUrlInput');
+    if (photoUrlInput) {
+        photoUrlInput.addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url) {
+                previewImageFromUrl(url);
+            } else {
+                newPhotoPreview.innerHTML = '';
+                newPhotoPreview.classList.remove('has-photo');
             }
         });
+    }
+    // Función para previsualizar imagen desde URL
+    function previewImageFromUrl(url) {
+        const img = new Image();
+        img.onload = function() {
+            newPhotoPreview.innerHTML = `<img src="${url}" alt="Vista previa">`;
+            newPhotoPreview.classList.add('has-photo');
+            newPhotoPreview.dataset.valid = 'true';
+        };
+        img.onerror = function() {
+            newPhotoPreview.innerHTML = `<div class="error-preview">La imagen no se pudo cargar</div>`;
+            newPhotoPreview.classList.add('has-photo');
+            newPhotoPreview.dataset.valid = 'false';
+        };
+        img.src = url;
     }
     // Procesar el formulario de foto
     if (photoForm) {
         photoForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const file = profilePhoto.files[0];
-            if (!file) {
-                showNotification('Por favor selecciona una foto', 'error');
+            const photoUrl = photoUrlInput.value.trim();
+            if (!photoUrl) {
+                showNotification('Por favor ingresa un enlace a una imagen', 'error');
                 return;
             }
             
-            // Verificar el tamaño del archivo
-            if (file.size > 5 * 1024 * 1024) { // 5MB
-                showNotification('La imagen es demasiado grande. Máximo 5MB.', 'error');
+            // Verificar si la imagen se cargó correctamente
+            if (newPhotoPreview.dataset.valid !== 'true') {
+                showNotification('La imagen no se pudo cargar. Por favor verifica el enlace', 'error');
                 return;
             }
             
             // Mostrar notificación de carga
-            showNotification('Cargando imagen...', 'info');
+            showNotification('Guardando imagen...', 'info');
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const photoUrl = e.target.result;
-                
-                // Guardar la foto (ahora con compresión)
-                saveProfilePhoto(photoUrl);
-                
-                // Actualizar avatar en la página
-                const profileAvatar = document.getElementById('profileAvatar');
-                if (profileAvatar) {
-                    profileAvatar.src = photoUrl;
-                }
-                
-                // Cerrar el modal
-                photoModal.style.display = 'none';
-                document.body.style.overflow = 'auto'; // Restaurar scroll
-            };
-            reader.readAsDataURL(file);
+            // Guardar la foto
+            saveProfilePhoto(photoUrl);
+            
+            // Actualizar avatar en la página
+            const profileAvatar = document.getElementById('profileAvatar');
+            if (profileAvatar) {
+                profileAvatar.src = photoUrl;
+            }
+            
+            // Cerrar el modal
+            photoModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restaurar scroll
         });
     }
     // NUEVO: Configurar eventos para cerrar modales
@@ -201,56 +202,43 @@ function saveProfilePhoto(photoUrl) {
     const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
     
     if (userData && userData.isLoggedIn) {
-        // Mostrar notificación de procesamiento
-        showNotification('Procesando imagen...', 'info');
+        // Guardar en localStorage
+        userData.avatarUrl = photoUrl;
+        localStorage.setItem('floridaRPUser', JSON.stringify(userData));
         
-        // Comprimir la imagen antes de guardarla
-        compressImage(photoUrl, 800, 0.7).then(compressedPhotoUrl => {
-            // Guardar en localStorage
-            userData.avatarUrl = compressedPhotoUrl;
-            localStorage.setItem('floridaRPUser', JSON.stringify(userData));
-            
-            // Actualizar la foto en la cédula si existe
-            updateIdCardPhoto(compressedPhotoUrl);
-            
-            // Mostrar notificación de carga
-            showNotification('Guardando foto...', 'info');
-            
-            // Guardar en la base de datos
-            fetch('/.netlify/functions/update-user-photo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: userData.robloxName,
-                    photoUrl: compressedPhotoUrl
-                })
+        // Actualizar la foto en la cédula si existe
+        updateIdCardPhoto(photoUrl);
+        
+        // Mostrar notificación de carga
+        showNotification('Guardando foto...', 'info');
+        
+        // Guardar en la base de datos
+        fetch('/.netlify/functions/update-user-photo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userData.robloxName,
+                photoUrl: photoUrl
             })
-            .then(response => {
-                if (!response.ok) {
-                    if (response.status === 500) {
-                        throw new Error('Error en el servidor. La imagen podría ser demasiado grande.');
-                    } else {
-                        throw new Error(`Error de red: ${response.status}`);
-                    }
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    showNotification('Foto actualizada correctamente en la base de datos', 'success');
-                } else {
-                    throw new Error(data.message || 'Error al guardar la foto');
-                }
-            })
-            .catch(error => {
-                console.error('Error al guardar la foto:', error);
-                showNotification('Error al guardar la foto en la base de datos: ' + error.message, 'error');
-            });
-        }).catch(error => {
-            console.error('Error al comprimir la imagen:', error);
-            showNotification('Error al procesar la imagen', 'error');
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error de red: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('Foto actualizada correctamente en la base de datos', 'success');
+            } else {
+                throw new Error(data.message || 'Error al guardar la foto');
+            }
+        })
+        .catch(error => {
+            console.error('Error al guardar la foto:', error);
+            showNotification('Error al guardar la foto en la base de datos: ' + error.message, 'error');
         });
     }
 }
@@ -322,7 +310,6 @@ function updateIdCardPhoto(photoUrl) {
         localStorage.setItem('floridaRPUser', JSON.stringify(userData));
     }
 }
-
 // Función para mostrar notificaciones
 function showNotification(message, type = 'info') {
     // Verificar si ya existe una notificación
@@ -364,3 +351,24 @@ function showNotification(message, type = 'info') {
         }, 300);
     }, 3000);
 }
+// Función para verificar si el usuario tiene cédula y mostrar/ocultar botones
+function checkIdCardStatus() {
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    const viewIdButton = document.getElementById('viewIdButton');
+    const createIdButton = document.getElementById('createIdButton');
+    
+    if (userData && userData.idCard) {
+        // El usuario tiene cédula
+        if (viewIdButton) viewIdButton.style.display = 'flex';
+        if (createIdButton) createIdButton.textContent = 'Actualizar Cédula';
+    } else {
+        // El usuario no tiene cédula
+        if (viewIdButton) viewIdButton.style.display = 'none';
+    }
+}
+
+// Llamar a esta función cuando se cargue la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar estado de la cédula
+    checkIdCardStatus();
+});

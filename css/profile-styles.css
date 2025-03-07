@@ -531,3 +531,32 @@ input[type="file"] {
         justify-content: center;
     }
 }
+
+/* Estilos para el campo de URL de imagen */
+.photo-preview {
+    margin-top: 15px;
+    min-height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.photo-preview.has-photo {
+    border: none;
+}
+
+.photo-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    display: block;
+}
+
+.error-preview {
+    color: #dc3545;
+    padding: 20px;
+    text-align: center;
+    font-weight: bold;
+}

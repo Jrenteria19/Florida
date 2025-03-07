@@ -91,15 +91,16 @@
                         <span class="info-value" id="profileDate">Cargando...</span>
                     </div>
                 </div>
+                <!-- En la sección de acciones del perfil -->
                 <div class="profile-actions">
-                    <button id="logoutButton" class="btn-logout">
-                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    <button id="changePhotoButton" class="btn-create-id">
+                        <i class="fas fa-camera"></i> Cambiar Foto
                     </button>
                     <button id="createIdButton" class="btn-create-id">
                         <i class="fas fa-id-card"></i> Crear Cédula
                     </button>
-                    <button id="viewIdButton" class="btn-view-id">
-                        <i class="fas fa-id-card"></i> Ver Cédula
+                    <button id="viewIdButton" class="btn-view-id" style="display: none;">
+                        <i class="fas fa-eye"></i> Ver Cédula
                     </button>
                 </div>
             </div>
@@ -213,6 +214,7 @@
     </div>
 
     <!-- Modal para cambiar foto de perfil -->
+    <!-- Reemplaza el contenido actual del modal de foto con esto -->
     <div id="photoModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -222,20 +224,14 @@
             <div class="modal-body">
                 <form id="photoForm">
                     <div class="form-group">
-                        <label for="profilePhoto">Foto de tu personaje</label>
-                        <div class="photo-upload-container">
-                            <input type="file" id="profilePhoto" name="profilePhoto" accept="image/*" required>
-                            <div class="photo-preview" id="newPhotoPreview">
-                                <i class="fas fa-camera"></i>
-                                <span>Haz clic aquí para subir una foto</span>
-                            </div>
-                        </div>
-                        <p class="photo-instructions">La foto debe mostrar claramente el rostro de tu personaje sin máscaras, cascos u otros elementos que cubran la cara.</p>
+                        <label for="photoUrlInput">Enlace de la imagen:</label>
+                        <input type="url" id="photoUrlInput" class="form-control" placeholder="https://ejemplo.com/imagen.jpg" required>
+                        <small class="form-text text-muted">Ingresa un enlace directo a una imagen (JPG, PNG, GIF)</small>
                     </div>
-                    
+                    <div id="newPhotoPreview" class="photo-preview"></div>
                     <div class="form-actions">
-                        <button type="button" class="btn-cancel">Cancelar</button>
-                        <button type="submit" class="btn-submit">Guardar Foto</button>
+                        <button type="button" class="btn btn-cancel">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
                     </div>
                 </form>
             </div>
