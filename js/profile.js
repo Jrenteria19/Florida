@@ -102,3 +102,103 @@ document.addEventListener('DOMContentLoaded', function() {
     // Iniciar verificación de autenticación
     checkAuth();
 });
+
+// Función para guardar la foto de perfil
+function saveProfilePhoto(photoUrl) {
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    
+    if (userData && userData.isLoggedIn) {
+        // Guardar en localStorage
+        userData.avatarUrl = photoUrl;
+        localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+        
+        // Actualizar la foto en la cédula si existe
+        updateIdCardPhoto(photoUrl);
+        
+        // Guardar en la base de datos
+        fetch('/.netlify/functions/update-user-photo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userData.robloxName,
+                photoUrl: photoUrl
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Foto actualizada correctamente en la base de datos', 'success');
+            } else {
+                throw new Error(data.message || 'Error al guardar la foto');
+            }
+        })
+        .catch(error => {
+            console.error('Error al guardar la foto:', error);
+            showNotification('Error al guardar la foto en la base de datos', 'error');
+        });
+    }
+}
+
+// Función para cargar la foto de perfil
+function loadProfilePhoto() {
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    const profileAvatar = document.getElementById('profileAvatar');
+    
+    if (userData && userData.avatarUrl && profileAvatar) {
+        profileAvatar.src = userData.avatarUrl;
+    }
+}
+
+// Función para actualizar la foto en la cédula
+function updateIdCardPhoto(photoUrl) {
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    
+    if (userData && userData.idCard) {
+        userData.idCard.photoUrl = photoUrl;
+        localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+    }
+}
+
+// Función para mostrar notificaciones
+function showNotification(message, type = 'info') {
+    // Verificar si ya existe una notificación
+    let notification = document.querySelector('.notification');
+    
+    // Si existe, eliminarla para mostrar la nueva
+    if (notification) {
+        notification.remove();
+    }
+    
+    // Crear nueva notificación
+    notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    // Icono según el tipo
+    let icon = 'info-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'error') icon = 'exclamation-circle';
+    if (type === 'warning') icon = 'exclamation-triangle';
+    
+    notification.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <span>${message}</span>
+    `;
+    
+    // Agregar al DOM
+    document.body.appendChild(notification);
+    
+    // Mostrar con animación
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Ocultar después de 3 segundos
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
