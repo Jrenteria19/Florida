@@ -153,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
         const robloxName = robloxInput.value.trim();
         const discordName = discordInput.value.trim();
         const password = passwordInput.value;
@@ -189,7 +188,6 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Show loading message
             showMessage('Procesando registro...', false);
-            
             // Enviar directamente a la base de datos sin verificación previa
             const response = await fetch('/.netlify/functions/register-user', {
                 method: 'POST',
@@ -209,9 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showMessage(`❌ Error al registrar: ${errorData.message || 'Error del servidor'}`);
                 return;
             }
-            
             const result = await response.json();
-            
             if (result.success) {
                 // Guardar datos del usuario en localStorage para gestión de sesión
                 const userData = {
@@ -220,11 +216,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     discordName: discordName,
                     isLoggedIn: true
                 };
-                
                 localStorage.setItem('floridaRPUser', JSON.stringify(userData));
-                
                 showMessage('🎉 Registro exitoso! Redirigiendo a la página principal...', false);
-                
                 // Redireccionar a la página principal después de un breve retraso
                 setTimeout(() => {
                     window.location.href = 'index.html';
