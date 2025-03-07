@@ -26,12 +26,10 @@ function checkExistingIdCard() {
     if (localIdCard) {
         return true;
     }
-    
     // Si no hay datos locales, devolvemos false y la verificación con la base de datos
     // se hará de forma asíncrona cuando se necesite
     return false;
 }
-
 // Función para verificar cédula en la base de datos (asíncrona)
 function checkIdCardInDatabase() {
     return new Promise((resolve, reject) => {
@@ -62,10 +60,6 @@ function checkIdCardInDatabase() {
             if (data.exists) {
                 // El usuario ya tiene una cédula en la base de datos
                 console.log('Cédula encontrada en la base de datos');
-                
-                // Guardar los datos en localStorage
-                saveIdCardData(data.idCard);
-                
                 resolve({ exists: true, idCard: data.idCard });
             } else {
                 resolve({ exists: false });
@@ -77,7 +71,6 @@ function checkIdCardInDatabase() {
         });
     });
 }
-
 // Modificar la función saveIdCardData para que no oculte el botón de crear
 function saveIdCardData(data) {
     const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
@@ -211,18 +204,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 issueDate,
                 discordName
             };
-            
-            // Guardar datos en localStorage
-            saveIdCardData(idCardData);
-            
-            // Guardar en la base de datos automáticamente
+            // Guardar solo en la base de datos
             sendToDatabase(idCardData);
-            
             // Mostrar la cédula
             showExistingIdCard(idCardData);
-            
             // Cerrar el modal de creación
             idCardModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restaurar scroll
         });
     }
     // Botón para descargar la cédula
@@ -366,8 +354,6 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// ... código existente ...
-
 // Función para formatear la fecha
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -393,7 +379,6 @@ function generateRUT() {
     const randomNum = Math.floor(10000000 + Math.random() * 90000000);
     return `${randomNum}-${Math.floor(Math.random() * 10)}`;
 }
-
 // Función para enviar datos a la base de datos
 function sendToDatabase(idCardData) {
     const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
@@ -426,7 +411,7 @@ function sendToDatabase(idCardData) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showNotification('Cédula guardada correctamente', 'success');
+            showNotification('Cédula guardada correctamente en la base de datos', 'success');
         } else {
             throw new Error(data.message || 'Error al guardar la cédula');
         }
@@ -434,5 +419,5 @@ function sendToDatabase(idCardData) {
     .catch(error => {
         console.error('Error al guardar la cédula:', error);
         showNotification('Error al guardar la cédula. Intenta de nuevo más tarde.', 'error');
-    });
+    }); // Close the sendToDatabase fetch request
 }
