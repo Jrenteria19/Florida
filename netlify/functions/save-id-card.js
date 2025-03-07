@@ -35,7 +35,8 @@ exports.handler = async function(event, context) {
         };
     }
     
-    const { userId, firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto } = requestBody;
+    const { userId, firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, photoUrl } = requestBody;
+    const hasPhoto = !!photoUrl;
     
     if (!userId || !firstName || !lastName || !birthDate || !nationality || !rut || !issueDate) {
         return {
@@ -57,7 +58,7 @@ exports.handler = async function(event, context) {
             ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false
         });
         
-        // Modificar la parte donde se crea la tabla id_cards
+        // Crear la tabla id_cards si no existe
         await connection.execute(`
             CREATE TABLE IF NOT EXISTS id_cards (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -67,7 +68,7 @@ exports.handler = async function(event, context) {
                 birth_date VARCHAR(20) NOT NULL,
                 age INT NOT NULL,
                 nationality VARCHAR(100) NOT NULL,
-                rut VARCHAR(50) NOT NULL UNIQUE,
+                rut VARCHAR(50) NOT NULL,
                 issue_date VARCHAR(20) NOT NULL,
                 discord_name VARCHAR(100),
                 has_photo BOOLEAN DEFAULT FALSE,
@@ -76,56 +77,14 @@ exports.handler = async function(event, context) {
             )
         `);
         
-        // Y modificar la parte donde se actualiza o inserta la cédula para incluir photo_url
-        // Para actualización:
-        await connection.execute(
-            `UPDATE id_cards SET 
-            first_name = ?, 
-            last_name = ?, 
-            birth_date = ?, 
-            age = ?, 
-            nationality = ?, 
-            rut = ?, 
-            issue_date = ?, 
-            discord_name = ?, 
-            has_photo = ?,
-            photo_url = ?
-            WHERE user_id = ?`,
-            [firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto, requestBody.photoUrl, userId]
-        );
-        
-        // Para inserción:
-        await connection.execute(
-            `INSERT INTO id_cards 
-            (user_id, first_name, last_name, birth_date, age, nationality, rut, issue_date, discord_name, has_photo, photo_url) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [userId, firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto, requestBody.photoUrl]
-        );
-        
-        // Obtener el ID del usuario basado en el nombre de Roblox
-        const [userRows] = await connection.execute(
-            'SELECT id FROM usuario WHERE roblox_name = ?',
-            [userId]
-        );
-        
-        if (userRows.length === 0) {
-            return {
-                statusCode: 404,
-                headers,
-                body: JSON.stringify({ success: false, message: 'Usuario no encontrado' })
-            };
-        }
-        
-        const userIdNumber = userRows[0].id;
-        
         // Verificar si el usuario ya tiene una cédula
         const [existingIdCards] = await connection.execute(
             'SELECT id FROM id_cards WHERE user_id = ?',
-            [userIdNumber]
+            [userId]
         );
         
         if (existingIdCards.length > 0) {
-            // Actualizar la cédula existente en lugar de crear una nueva
+            // Actualizar la cédula existente
             await connection.execute(
                 `UPDATE id_cards SET 
                 first_name = ?, 
@@ -136,9 +95,10 @@ exports.handler = async function(event, context) {
                 rut = ?, 
                 issue_date = ?, 
                 discord_name = ?, 
-                has_photo = ?
+                has_photo = ?,
+                photo_url = ?
                 WHERE user_id = ?`,
-                [firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto, userIdNumber]
+                [firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto, photoUrl, userId]
             );
             
             return {
@@ -152,12 +112,12 @@ exports.handler = async function(event, context) {
             };
         }
         
-        // Insertar datos en la tabla id_cards
+        // Insertar nueva cédula
         const [result] = await connection.execute(
             `INSERT INTO id_cards 
-            (user_id, first_name, last_name, birth_date, age, nationality, rut, issue_date, discord_name, has_photo) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [userIdNumber, firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto]
+            (user_id, first_name, last_name, birth_date, age, nationality, rut, issue_date, discord_name, has_photo, photo_url) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [userId, firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto, photoUrl]
         );
         
         return {

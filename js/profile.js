@@ -193,8 +193,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Iniciar verificación de autenticación
     checkAuth();
 });
-
-// Función para guardar la foto de perfil
 function saveProfilePhoto(photoUrl) {
     const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
     
@@ -217,7 +215,12 @@ function saveProfilePhoto(photoUrl) {
                 photoUrl: photoUrl
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error de red: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 showNotification('Foto actualizada correctamente en la base de datos', 'success');
@@ -231,7 +234,6 @@ function saveProfilePhoto(photoUrl) {
         });
     }
 }
-
 // Función para cargar la foto de perfil
 function loadProfilePhoto() {
     const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');

@@ -390,10 +390,6 @@ function sendToDatabase(idCardData) {
     
     showNotification('Guardando cédula...', 'info');
     
-    // Convertir la fecha de nacimiento a formato ISO para enviar a la base de datos
-    const birthDateObj = new Date(idCardData.birthDate);
-    const formattedBirthDate = birthDateObj.toISOString().split('T')[0];
-    
     fetch('/.netlify/functions/save-id-card', {
         method: 'POST',
         headers: {
@@ -403,7 +399,7 @@ function sendToDatabase(idCardData) {
             userId: userData.robloxName,
             firstName: idCardData.firstName,
             lastName: idCardData.lastName,
-            birthDate: formattedBirthDate, // Usar formato ISO para la fecha
+            birthDate: idCardData.birthDate,
             age: idCardData.age,
             nationality: idCardData.nationality,
             rut: idCardData.rut,
@@ -421,6 +417,9 @@ function sendToDatabase(idCardData) {
     .then(data => {
         if (data.success) {
             showNotification('Cédula guardada correctamente en la base de datos', 'success');
+            
+            // También guardar en localStorage para acceso rápido
+            saveIdCardData(idCardData);
         } else {
             throw new Error(data.message || 'Error al guardar la cédula');
         }
