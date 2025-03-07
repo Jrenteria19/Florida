@@ -30,14 +30,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Buscar el contenedor de botones de autenticación
-        const authButtons = document.getElementById('guestButtons');
-        if (authButtons) {
+        const guestButtons = document.getElementById('guestButtons');
+        
+        // Si no existe, no mostrar error y continuar
+        if (!guestButtons) {
+            console.log('Nota: No se encontró el contenedor de botones de autenticación en esta página');
+        } else {
+            // Ocultar botones de invitado
+            guestButtons.style.display = 'none';
+            
             // Crear elemento de perfil de usuario
             const userProfileElement = document.createElement('div');
             userProfileElement.className = 'user-profile';
             userProfileElement.innerHTML = `
                 <div class="user-avatar">
-                    <img src="imgs/default-avatar.png" alt="Avatar">
+                    <img src="${user.avatarUrl || 'imgs/default-avatar.png'}" alt="Avatar" onerror="this.src='imgs/default-avatar.png'">
                 </div>
                 <div class="user-name">${user.robloxName}</div>
             `;
@@ -85,16 +92,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 document.head.appendChild(style);
             }
+            
             // Reemplazar el contenedor de botones de autenticación con el perfil de usuario
-            authButtons.parentNode.replaceChild(userProfileElement, authButtons);
+            guestButtons.parentNode.replaceChild(userProfileElement, guestButtons);
+            
             // Agregar event listener para redirigir a la página de perfil
             userProfileElement.addEventListener('click', function() {
                 window.location.href = 'profile.html';
             });
-        } else {
-            console.warn('No se encontró el contenedor de botones de autenticación (#guestButtons)');
         }
     }
+    
     // Inicializar verificación de sesión
     checkUserSession();
 });
