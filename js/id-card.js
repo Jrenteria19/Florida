@@ -1,3 +1,18 @@
+// Cargar html2canvas para la captura de la cédula
+function loadHtml2Canvas() {
+    if (!window.html2canvas) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.integrity = 'sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==';
+        script.crossOrigin = 'anonymous';
+        script.referrerPolicy = 'no-referrer';
+        document.head.appendChild(script);
+    }
+}
+
+// Cargar html2canvas al iniciar
+loadHtml2Canvas();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Referencias a elementos del DOM
     const createIdButton = document.getElementById('createIdButton');
@@ -11,6 +26,133 @@ document.addEventListener('DOMContentLoaded', function() {
     const idCardForm = document.getElementById('idCardForm');
     const downloadButton = document.getElementById('downloadIdCard');
     const saveButton = document.getElementById('saveIdCard');
+    
+    // Funciones auxiliares
+    
+    // Calcular edad basada en la fecha de nacimiento
+    function calculateAge(birthDateString) {
+        const today = new Date();
+        const birthDate = new Date(birthDateString);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        return age;
+    }
+    
+    // Generar RUT único
+    function generateRUT() {
+        // Formato: XX.XXX.XXX-X (donde X son números aleatorios)
+        const part1 = Math.floor(10 + Math.random() * 90);
+        const part2 = Math.floor(100 + Math.random() * 900);
+        const part3 = Math.floor(100 + Math.random() * 900);
+        const verifier = "0123456789K"[Math.floor(Math.random() * 11)];
+        
+        return `${part1}.${part2}.${part3}-${verifier}`;
+    }
+    
+    // Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        
+        const parts = dateString.split('-');
+        if (parts.length !== 3) return dateString;
+        
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    
+    // Guardar datos de la cédula en localStorage
+    function saveIdCardData(data) {
+        const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+        
+        if (userData && userData.isLoggedIn) {
+            userData.idCard = data;
+            localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+            
+            // Actualizar la interfaz: ocultar botón de crear y mostrar botón de ver
+            if (createIdButton) createIdButton.style.display = 'none';
+            if (viewIdButton) viewIdButton.style.display = 'flex';
+        }
+    }
+    
+    // Obtener datos de la cédula del localStorage
+    function getIdCardData() {
+        const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+        return (userData && userData.idCard) ? userData.idCard : null;
+    }
+    
+    // Enviar datos a la base de datos
+    function sendToDatabase(idCardData) {
+        // Obtener datos del usuario
+        const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+        
+        if (!userData || !userData.isLoggedIn) {
+            console.error('No hay usuario autenticado');
+            return;
+        }
+        
+        // Preparar datos para enviar
+        const dataToSend = {
+            userId: userData.id || userData.robloxName, // Identificador único del usuario
+            robloxName: userData.robloxName,
+            discordName: userData.discordName,
+            idCard: {
+                firstName: idCardData.firstName,
+                lastName: idCardData.lastName,
+                birthDate: idCardData.birthDate,
+                age: idCardData.age,
+                nationality: idCardData.nationality,
+                rut: idCardData.rut,
+                issueDate: idCardData.issueDate,
+                // No enviamos la imagen completa a la base de datos por su tamaño
+                hasPhoto: !!idCardData.photoUrl
+            }
+        };
+        
+        // Aquí iría el código para enviar a la base de datos
+        // Por ejemplo, usando fetch para una API:
+        /*
+        fetch('https://tu-api.com/idcards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Éxito:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            showNotification('Error al guardar en la base de datos', 'error');
+        });
+        */
+        
+        // Por ahora, solo registramos en consola
+        console.log('Datos enviados a la base de datos:', dataToSend);
+    }
+    
+    // Cargar cédula si existe
+    function loadIdCard() {
+        const idCardData = getIdCardData();
+        
+        if (idCardData) {
+            // Ocultar el botón de crear cédula ya que el usuario ya tiene una
+            if (createIdButton) createIdButton.style.display = 'none';
+            if (viewIdButton) {
+                viewIdButton.style.display = 'flex';
+                
+                // Agregar evento para mostrar la cédula existente
+                viewIdButton.addEventListener('click', function() {
+                    showExistingIdCard(idCardData);
+                });
+            }
+        }
+    }
     
     // Abrir modal de creación de cédula
     if (createIdButton) {
@@ -56,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             photoInput.click();
         });
     }
+    
     // Manejar envío del formulario
     if (idCardForm) {
         idCardForm.addEventListener('submit', function(e) {
@@ -97,7 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('idCardNationality').textContent = nationality;
             document.getElementById('idCardRut').textContent = rut;
             document.getElementById('idCardIssueDate').textContent = issueDate;
-            document.getElementById('idCardSignature').textContent = discordName;
+            
+            // Verificar si existe el elemento para la firma
+            const signatureElement = document.getElementById('idCardSignature');
+            if (signatureElement) {
+                signatureElement.textContent = discordName;
+            }
             
             // Mostrar foto en la previsualización
             const reader = new FileReader();
@@ -124,6 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             idCardPreview.style.display = 'block';
         });
     }
+    
     // Botón para descargar la cédula
     if (downloadButton) {
         downloadButton.addEventListener('click', function() {
@@ -146,6 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
     // Botón para guardar la cédula
     if (saveButton) {
         saveButton.addEventListener('click', function() {
@@ -190,141 +340,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    // Cargar cédula si existe
-    loadIdCard();
+    // Verificar si el usuario ya tiene una cédula
+    const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
+    if (userData && userData.idCard) {
+        // Si tiene cédula, ocultar botón de crear y mostrar botón de ver
+        if (createIdButton) createIdButton.style.display = 'none';
+        if (viewIdButton) {
+            viewIdButton.style.display = 'flex';
+            
+            // Agregar evento para mostrar la cédula existente
+            viewIdButton.addEventListener('click', function() {
+                showExistingIdCard(userData.idCard);
+            });
+        }
+    }
     
-    // Función para mostrar la cédula existente
-    function showExistingIdCard(idCardData) {
-        // Mostrar datos en la previsualización
-        document.getElementById('idCardName').textContent = `${idCardData.firstName} ${idCardData.lastName}`;
-        document.getElementById('idCardBirthDate').textContent = formatDate(idCardData.birthDate);
-        document.getElementById('idCardAge').textContent = `${idCardData.age} años`;
-        document.getElementById('idCardNationality').textContent = idCardData.nationality;
-        document.getElementById('idCardRut').textContent = idCardData.rut;
-        document.getElementById('idCardIssueDate').textContent = idCardData.issueDate;
-        
-        // Mostrar foto en la previsualización si existe
-        if (idCardData.photoUrl) {
-            document.getElementById('idCardPhoto').innerHTML = `<img src="${idCardData.photoUrl}" alt="Foto de ID">`;
-        }
-        
-        // Mostrar modal de previsualización
-        idCardPreview.style.display = 'block';
-        document.body.style.overflow = 'hidden'; // Prevenir scroll
-    }
-    // Mostrar cédula existente
-    function showIdCard(data) {
-        // Mostrar datos en la previsualización
-        document.getElementById('idCardName').textContent = data.fullName;
-        document.getElementById('idCardBirthDate').textContent = formatDate(data.birthDate);
-        document.getElementById('idCardNationality').textContent = data.nationality;
-        document.getElementById('idCardNumber').textContent = data.idNumber;
-        document.getElementById('idCardIssueDate').textContent = data.issueDate;
-        
-        // Mostrar foto en la previsualización
-        if (data.photoUrl) {
-            document.getElementById('idCardPhoto').innerHTML = `<img src="${data.photoUrl}" alt="Foto de ID">`;
-        }
-        
-        // Mostrar modal de previsualización
-        idCardPreview.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-    // Mostrar notificación
-    function showNotification(message, type = 'info') {
-        // Crear elemento de notificación
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        // Agregar estilos si no existen
-        if (!document.getElementById('notification-styles')) {
-            const style = document.createElement('style');
-            style.id = 'notification-styles';
-            style.textContent = `
-                .notification {
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 8px;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-                    z-index: 9999;
-                    animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-out 2.5s forwards;
-                    max-width: 300px;
-                }
-                
-                .notification.success {
-                    background: linear-gradient(45deg, #4caf50, #2e7d32);
-                    color: white;
-                }
-                
-                .notification.error {
-                    background: linear-gradient(45deg, #f44336, #c62828);
-                    color: white;
-                }
-                
-                .notification.info {
-                    background: linear-gradient(45deg, #2196f3, #1565c0);
-                    color: white;
-                }
-                
-                .notification-content {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                
-                @keyframes slideIn {
-                    from {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-                
-                @keyframes fadeOut {
-                    from {
-                        opacity: 1;
-                    }
-                    to {
-                        opacity: 0;
-                        visibility: hidden;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        // Agregar al DOM
-        document.body.appendChild(notification);
-        
-        // Eliminar después de 3 segundos
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
+    // Llamar a la función para cargar la cédula si existe
+    loadIdCard();
 });
-
-// Cargar html2canvas para la captura de la cédula
-function loadHtml2Canvas() {
-    if (!window.html2canvas) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        script.integrity = 'sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==';
-        script.crossOrigin = 'anonymous';
-        script.referrerPolicy = 'no-referrer';
-        document.head.appendChild(script);
-    }
-}
-
-// Cargar html2canvas al iniciar
-loadHtml2Canvas();

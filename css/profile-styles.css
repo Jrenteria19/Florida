@@ -156,6 +156,9 @@ body::before {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     background: linear-gradient(45deg, #fb8c00, #ef6c00);
 }
+.btn-view-id i {
+    font-size: 1.2rem;
+}
 .btn-create-id {
     padding: 0.8rem 2rem;
     border-radius: 10px;
@@ -260,7 +263,7 @@ body::before {
 #idCardForm input[type="text"],
 #idCardForm input[type="date"] {
     width: 100%;
-    padding: 0.8rem 1rem;
+    padding: 0.8rem 0rem;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
