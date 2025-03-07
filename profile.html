@@ -91,9 +91,125 @@
                     <button id="logoutButton" class="btn-logout">
                         <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                     </button>
+                    <button id="createIdButton" class="btn-create-id">
+                        <i class="fas fa-id-card"></i> Crear Cédula
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Modal para crear cédula -->
+    <div id="idCardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crear Cédula de Identidad</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="idCardForm">
+                    <div class="form-group">
+                        <label for="fullName">Nombres y Apellidos</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="birthDate">Fecha de Nacimiento</label>
+                        <input type="date" id="birthDate" name="birthDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nationality">Nacionalidad</label>
+                        <input type="text" id="nationality" name="nationality" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="characterPhoto">Foto de Personaje</label>
+                        <div class="photo-upload-container">
+                            <input type="file" id="characterPhoto" name="characterPhoto" accept="image/*" required>
+                            <div class="photo-preview" id="photoPreview">
+                                <i class="fas fa-camera"></i>
+                                <span>Sin foto</span>
+                            </div>
+                        </div>
+                        <p class="photo-instructions">La foto debe mostrar claramente el rostro de tu personaje sin máscaras, cascos u otros elementos que cubran la cara.</p>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel">Cancelar</button>
+                        <button type="submit" class="btn-submit">Crear Cédula</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previsualización de la cédula -->
+    <div id="idCardPreview" class="modal">
+        <div class="modal-content id-card-preview-content">
+            <div class="modal-header">
+                <h2>Tu Cédula de Identidad</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="id-card">
+                    <div class="id-card-header">
+                        <img src="imgs/FloridaRp.png" alt="FloridaRP Logo" class="id-logo">
+                        <div class="id-title">
+                            <h3>REPÚBLICA DE FLORIDA</h3>
+                            <h4>CÉDULA DE IDENTIDAD</h4>
+                        </div>
+                    </div>
+                    <div class="id-card-body">
+                        <div class="id-photo" id="idCardPhoto"></div>
+                        <div class="id-info">
+                            <div class="id-field">
+                                <span class="id-label">Nombres y Apellidos:</span>
+                                <span class="id-value" id="idCardName"></span>
+                            </div>
+                            <div class="id-field">
+                                <span class="id-label">Fecha de Nacimiento:</span>
+                                <span class="id-value" id="idCardBirthDate"></span>
+                            </div>
+                            <div class="id-field">
+                                <span class="id-label">Nacionalidad:</span>
+                                <span class="id-value" id="idCardNationality"></span>
+                            </div>
+                            <div class="id-field">
+                                <span class="id-label">ID:</span>
+                                <span class="id-value" id="idCardNumber"></span>
+                            </div>
+                            <div class="id-field">
+                                <span class="id-label">Fecha de Emisión:</span>
+                                <span class="id-value" id="idCardIssueDate"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="id-card-footer">
+                        <div class="id-signature">
+                            <div class="signature-line"></div>
+                            <span>Firma del Titular</span>
+                        </div>
+                        <div class="id-barcode">
+                            <i class="fas fa-barcode"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="id-card-actions">
+                    <button id="downloadIdCard" class="btn-download">
+                        <i class="fas fa-download"></i> Descargar Cédula
+                    </button>
+                    <button id="saveIdCard" class="btn-save">
+                        <i class="fas fa-save"></i> Guardar Cédula
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/navigation.js" defer></script>
+    <script src="js/session.js" defer></script>
+    <script src="js/profile.js" defer></script>
+    <script src="js/id-card.js" defer></script>
 </body>
 </html>
