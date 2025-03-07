@@ -57,17 +57,29 @@ exports.handler = async function(event, context) {
         };
     }
     
+    // Verificar si la URL de la foto es demasiado larga
+    if (photoUrl.length > 1000000) {  // Limitar a ~1MB
+        return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ 
+                success: false, 
+                message: 'La imagen es demasiado grande. Por favor, utiliza una imagen más pequeña.' 
+            })
+        };
+    }
+    
     let connection;
     try {
-        // Conexión a la base de datos
-        connection = await mysql.createConnection({
-            host: process.env.TIDB_HOST,
-            port: process.env.TIDB_PORT,
-            user: process.env.TIDB_USER,
-            password: process.env.TIDB_PASSWORD,
-            database: process.env.TIDB_DATABASE,
-            ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false
-        });
+        // Conexión a la base de datos usando db-connect.js
+        const dbConnect = require('./db-connect');
+        connection = await dbConnect();
+        
+        if (!connection) {
+            throw new Error('No se pudo establecer conexión con la base de datos');
+        }
+        
+        console.log('Conexión establecida correctamente');
         
         // Verificar si existe la tabla usuario
         await connection.execute(`
@@ -81,11 +93,15 @@ exports.handler = async function(event, context) {
             )
         `);
         
+        console.log('Tabla usuario verificada');
+        
         // Actualizar la foto del usuario
         const [result] = await connection.execute(
             'UPDATE usuario SET avatar_url = ? WHERE roblox_name = ?',
             [photoUrl, userId]
         );
+        
+        console.log('Resultado de la actualización:', result);
         
         if (result.affectedRows === 0) {
             return {
@@ -122,6 +138,8 @@ exports.handler = async function(event, context) {
                 'UPDATE id_cards SET photo_url = ?, has_photo = TRUE WHERE user_id = ?',
                 [photoUrl, userId]
             );
+            
+            console.log('Foto actualizada en la tabla id_cards');
         } catch (idCardError) {
             console.log('Nota: No se pudo actualizar la foto en la cédula:', idCardError.message);
             // No fallamos la operación principal si esto falla
@@ -149,7 +167,12 @@ exports.handler = async function(event, context) {
         };
     } finally {
         if (connection) {
-            await connection.end();
+            try {
+                await connection.end();
+                console.log('Conexión cerrada correctamente');
+            } catch (err) {
+                console.error('Error al cerrar la conexión:', err);
+            }
         }
     }
 };

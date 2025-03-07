@@ -135,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
     // Procesar el formulario de foto
     if (photoForm) {
         photoForm.addEventListener('submit', function(e) {
@@ -147,11 +146,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Verificar el tamaño del archivo
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                showNotification('La imagen es demasiado grande. Máximo 5MB.', 'error');
+                return;
+            }
+            
+            // Mostrar notificación de carga
+            showNotification('Cargando imagen...', 'info');
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 const photoUrl = e.target.result;
                 
-                // Guardar la foto
+                // Guardar la foto (ahora con compresión)
                 saveProfilePhoto(photoUrl);
                 
                 // Actualizar avatar en la página
@@ -163,8 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Cerrar el modal
                 photoModal.style.display = 'none';
                 document.body.style.overflow = 'auto'; // Restaurar scroll
-                
-                showNotification('Foto de perfil actualizada correctamente', 'success');
             };
             reader.readAsDataURL(file);
         });
@@ -195,42 +201,107 @@ function saveProfilePhoto(photoUrl) {
     const userData = JSON.parse(localStorage.getItem('floridaRPUser') || '{}');
     
     if (userData && userData.isLoggedIn) {
-        // Guardar en localStorage
-        userData.avatarUrl = photoUrl;
-        localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+        // Mostrar notificación de procesamiento
+        showNotification('Procesando imagen...', 'info');
         
-        // Actualizar la foto en la cédula si existe
-        updateIdCardPhoto(photoUrl);
-        
-        // Guardar en la base de datos
-        fetch('/.netlify/functions/update-user-photo', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: userData.robloxName,
-                photoUrl: photoUrl
+        // Comprimir la imagen antes de guardarla
+        compressImage(photoUrl, 800, 0.7).then(compressedPhotoUrl => {
+            // Guardar en localStorage
+            userData.avatarUrl = compressedPhotoUrl;
+            localStorage.setItem('floridaRPUser', JSON.stringify(userData));
+            
+            // Actualizar la foto en la cédula si existe
+            updateIdCardPhoto(compressedPhotoUrl);
+            
+            // Mostrar notificación de carga
+            showNotification('Guardando foto...', 'info');
+            
+            // Guardar en la base de datos
+            fetch('/.netlify/functions/update-user-photo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userData.robloxName,
+                    photoUrl: compressedPhotoUrl
+                })
             })
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error de red: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                showNotification('Foto actualizada correctamente en la base de datos', 'success');
-            } else {
-                throw new Error(data.message || 'Error al guardar la foto');
-            }
-        })
-        .catch(error => {
-            console.error('Error al guardar la foto:', error);
-            showNotification('Error al guardar la foto en la base de datos', 'error');
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 500) {
+                        throw new Error('Error en el servidor. La imagen podría ser demasiado grande.');
+                    } else {
+                        throw new Error(`Error de red: ${response.status}`);
+                    }
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showNotification('Foto actualizada correctamente en la base de datos', 'success');
+                } else {
+                    throw new Error(data.message || 'Error al guardar la foto');
+                }
+            })
+            .catch(error => {
+                console.error('Error al guardar la foto:', error);
+                showNotification('Error al guardar la foto en la base de datos: ' + error.message, 'error');
+            });
+        }).catch(error => {
+            console.error('Error al comprimir la imagen:', error);
+            showNotification('Error al procesar la imagen', 'error');
         });
     }
+}
+// Función para comprimir imágenes
+function compressImage(dataUrl, maxWidth, quality) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = function() {
+            // Calcular nuevas dimensiones manteniendo la proporción
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+            
+            // Crear canvas para la compresión
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Dibujar imagen en el canvas
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Obtener la imagen comprimida
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+            
+            // Verificar tamaño
+            const sizeInBytes = compressedDataUrl.length * 0.75; // Aproximación del tamaño en bytes
+            const sizeInKB = sizeInBytes / 1024;
+            
+            console.log(`Tamaño de imagen comprimida: ${sizeInKB.toFixed(2)} KB`);
+            
+            if (sizeInKB > 500) {
+                // Si sigue siendo grande, comprimir más
+                return compressImage(compressedDataUrl, maxWidth * 0.8, quality * 0.8)
+                    .then(resolve)
+                    .catch(reject);
+            }
+            
+            resolve(compressedDataUrl);
+        };
+        
+        img.onerror = function() {
+            reject(new Error('Error al cargar la imagen para compresión'));
+        };
+        
+        img.src = dataUrl;
+    });
 }
 // Función para cargar la foto de perfil
 function loadProfilePhoto() {

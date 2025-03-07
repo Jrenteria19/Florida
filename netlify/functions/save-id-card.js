@@ -18,6 +18,15 @@ exports.handler = async function(event, context) {
         };
     }
     
+    // Verificar método HTTP
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            headers,
+            body: JSON.stringify({ success: false, message: 'Método no permitido' })
+        };
+    }
+    
     // Parse request body
     let requestBody;
     try {
@@ -29,7 +38,7 @@ exports.handler = async function(event, context) {
             headers,
             body: JSON.stringify({ 
                 success: false, 
-                message: 'Invalid request body',
+                message: 'Formato de solicitud inválido',
                 error: error.message 
             })
         };
@@ -38,25 +47,30 @@ exports.handler = async function(event, context) {
     const { userId, firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, photoUrl } = requestBody;
     const hasPhoto = !!photoUrl;
     
+    // Validar datos requeridos
     if (!userId || !firstName || !lastName || !birthDate || !nationality || !rut || !issueDate) {
         return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ success: false, message: 'Missing required fields' })
+            body: JSON.stringify({ 
+                success: false, 
+                message: 'Faltan campos requeridos para la cédula' 
+            })
         };
     }
     
     // Connect to database
     let connection;
     try {
-        connection = await mysql.createConnection({
-            host: process.env.TIDB_HOST,
-            port: process.env.TIDB_PORT,
-            user: process.env.TIDB_USER,
-            password: process.env.TIDB_PASSWORD,
-            database: process.env.TIDB_DATABASE,
-            ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false
-        });
+        // Conexión a la base de datos usando db-connect.js
+        const dbConnect = require('./db-connect');
+        connection = await dbConnect();
+        
+        if (!connection) {
+            throw new Error('No se pudo establecer conexión con la base de datos');
+        }
+        
+        console.log('Conexión establecida correctamente');
         
         // Crear la tabla id_cards si no existe
         await connection.execute(`
@@ -76,6 +90,8 @@ exports.handler = async function(event, context) {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        console.log('Tabla id_cards verificada');
         
         // Verificar si el usuario ya tiene una cédula
         const [existingIdCards] = await connection.execute(
@@ -101,6 +117,8 @@ exports.handler = async function(event, context) {
                 [firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto, photoUrl, userId]
             );
             
+            console.log('Cédula actualizada correctamente');
+            
             return {
                 statusCode: 200,
                 headers,
@@ -119,6 +137,8 @@ exports.handler = async function(event, context) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [userId, firstName, lastName, birthDate, age, nationality, rut, issueDate, discordName, hasPhoto, photoUrl]
         );
+        
+        console.log('Nueva cédula creada correctamente');
         
         return {
             statusCode: 200,
@@ -143,7 +163,12 @@ exports.handler = async function(event, context) {
         };
     } finally {
         if (connection) {
-            await connection.end();
+            try {
+                await connection.end();
+                console.log('Conexión cerrada correctamente');
+            } catch (err) {
+                console.error('Error al cerrar la conexión:', err);
+            }
         }
     }
 };
