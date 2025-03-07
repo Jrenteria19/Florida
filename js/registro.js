@@ -21,13 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageContainer = document.createElement('div');
     messageContainer.className = 'validation-message';
     messageContainer.style.display = 'none';
-    messageContainer.style.padding = '10px 15px';
-    messageContainer.style.borderRadius = '8px';
-    messageContainer.style.marginTop = '10px';
-    messageContainer.style.fontWeight = 'bold';
-    messageContainer.style.textAlign = 'center';
-    messageContainer.style.transition = 'all 0.3s ease';
-    document.querySelector('.registration-form-wrapper').appendChild(messageContainer);
+    document.querySelector('.form-header').appendChild(messageContainer);
     
     // Show validation message
     function showMessage(message, isError = true) {
@@ -50,8 +44,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
     
-    // Form submission
+    // Form elements
+    const robloxInput = document.getElementById('robloxName');
+    const discordInput = document.getElementById('discordName');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
     const form = document.getElementById('registrationForm');
+    
+    // Add validation status indicators
+    function addValidationIndicator(inputElement) {
+        const container = inputElement.parentElement;
+        const indicator = document.createElement('span');
+        indicator.className = 'validation-indicator';
+        
+        if (container.classList.contains('password-input-container')) {
+            container.appendChild(indicator);
+        } else {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'input-wrapper';
+            
+            // Move the input to the wrapper
+            inputElement.parentNode.insertBefore(wrapper, inputElement);
+            wrapper.appendChild(inputElement);
+            wrapper.appendChild(indicator);
+        }
+        
+        return indicator;
+    }
+    
+    // Create indicators
+    const robloxIndicator = addValidationIndicator(robloxInput);
+    const discordIndicator = addValidationIndicator(discordInput);
+    const passwordIndicator = addValidationIndicator(passwordInput);
+    const confirmPasswordIndicator = addValidationIndicator(confirmPasswordInput);
     
     // Basic validation for usernames
     function validateUsername(username) {
@@ -67,47 +92,145 @@ document.addEventListener('DOMContentLoaded', function() {
         return passwordRegex.test(password);
     }
     
+    // Update indicator
+    function updateIndicator(indicator, isValid) {
+        if (isValid) {
+            indicator.innerHTML = '<i class="fas fa-check-circle"></i>';
+            indicator.style.color = '#4CAF50';
+        } else {
+            indicator.innerHTML = '<i class="fas fa-times-circle"></i>';
+            indicator.style.color = '#ff5252';
+        }
+    }
+    
+    // Check if username already exists
+    async function checkUsernameExists(type, username) {
+        try {
+            const response = await fetch('/.netlify/functions/check-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    type: type,
+                    username: username
+                })
+            });
+            
+            const data = await response.json();
+            return data.exists;
+        } catch (error) {
+            console.error(`Error checking ${type} username:`, error);
+            return false;
+        }
+    }
+    
+    // Real-time validation for Roblox username
+    robloxInput.addEventListener('input', function() {
+        const isValid = validateUsername(this.value.trim());
+        updateIndicator(robloxIndicator, isValid);
+    });
+    
+    // Real-time validation for Discord username
+    discordInput.addEventListener('input', function() {
+        const isValid = validateUsername(this.value.trim());
+        updateIndicator(discordIndicator, isValid);
+    });
+    
+    // Real-time validation for password
+    passwordInput.addEventListener('input', function() {
+        const isValid = validatePassword(this.value);
+        updateIndicator(passwordIndicator, isValid);
+        
+        // Also check confirm password if it has a value
+        if (confirmPasswordInput.value) {
+            const passwordsMatch = this.value === confirmPasswordInput.value;
+            updateIndicator(confirmPasswordIndicator, passwordsMatch);
+        }
+    });
+    
+    // Real-time validation for confirm password
+    confirmPasswordInput.addEventListener('input', function() {
+        const passwordsMatch = this.value === passwordInput.value;
+        updateIndicator(confirmPasswordIndicator, passwordsMatch);
+    });
+    
+    // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const robloxName = document.getElementById('robloxName').value.trim();
-        const discordName = document.getElementById('discordName').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+        const robloxName = robloxInput.value.trim();
+        const discordName = discordInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
         
-        // Validate Roblox username format
-        if (!validateUsername(robloxName)) {
+        // Validate all fields
+        const isRobloxValid = validateUsername(robloxName);
+        const isDiscordValid = validateUsername(discordName);
+        const isPasswordValid = validatePassword(password);
+        const passwordsMatch = password === confirmPassword;
+        
+        // Show appropriate message for the first validation error
+        if (!isRobloxValid) {
             showMessage('⚠️ El nombre de Roblox debe tener al menos 3 caracteres y solo puede contener letras, números y guiones bajos');
             return;
         }
-
-        // Validate Discord username format
-        if (!validateUsername(discordName)) {
+        
+        if (!isDiscordValid) {
             showMessage('⚠️ El nombre de Discord debe tener al menos 3 caracteres y solo puede contener letras, números y guiones bajos');
             return;
         }
-
-        // Validate password
-        if (!validatePassword(password)) {
+        
+        if (!isPasswordValid) {
             showMessage('⚠️ La contraseña debe tener al menos 8 caracteres, una mayúscula y un número');
             return;
         }
-
-        // Check if passwords match
-        if (password !== confirmPassword) {
+        
+        if (!passwordsMatch) {
             showMessage('⚠️ Las contraseñas no coinciden');
             return;
         }
         
         try {
-            // For now, just show a success message
-            showMessage('🎉 Registro exitoso! Redirigiendo al inicio de sesión...', false);
+            // Check if Roblox username already exists
+            const robloxExists = await checkUsernameExists('roblox', robloxName);
+            if (robloxExists) {
+                showMessage('⚠️ Este nombre de usuario de Roblox ya está registrado');
+                return;
+            }
             
-            // Redirect after a short delay
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
+            // Check if Discord username already exists
+            const discordExists = await checkUsernameExists('discord', discordName);
+            if (discordExists) {
+                showMessage('⚠️ Este nombre de usuario de Discord ya está registrado');
+                return;
+            }
             
+            // Register the user
+            const response = await fetch('/.netlify/functions/register-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    robloxName,
+                    discordName,
+                    password
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showMessage('🎉 Registro exitoso! Redirigiendo al inicio de sesión...', false);
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            } else {
+                showMessage(`❌ Error: ${result.message}`);
+            }
         } catch (error) {
             console.error('Error:', error);
             showMessage('❌ Error al registrar. Por favor, inténtalo de nuevo.');
