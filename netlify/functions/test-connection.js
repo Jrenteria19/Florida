@@ -4,36 +4,38 @@ exports.handler = async function(event, context) {
   context.callbackWaitsForEmptyEventLoop = false;
   
   try {
-    // Intentar establecer conexión
+    console.log('Iniciando prueba de conexión...');
     const connection = await createConnection();
     
-    // Ejecutar una consulta simple para verificar que funciona
-    await connection.execute('SELECT 1');
-    
-    // Cerrar la conexión
+    const [result] = await connection.execute('SELECT 1 as test');
     await connection.end();
+    
+    console.log('Prueba completada:', result);
     
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({ 
         success: true, 
-        message: 'Conexión exitosa a la base de datos' 
+        message: 'Conexión exitosa a la base de datos',
+        data: result
       })
     };
   } catch (error) {
-    console.error('Error al probar la conexión:', error);
+    console.error('Error en prueba de conexión:', error);
     
     return {
       statusCode: 500,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({ 
         success: false, 
-        error: 'Error al conectar con la base de datos: ' + error.message 
+        error: `Error de conexión: ${error.message}`
       })
     };
   }
