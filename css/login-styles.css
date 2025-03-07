@@ -239,3 +239,46 @@ body::before {
     border: 1px solid rgba(34, 197, 94, 0.3);
     color: #bbf7d0;
 }
+/* Optimización de rendimiento */
+body {
+    /* Mantener el resto igual */
+    background: url('../imgs/comisaria2.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    /* Añadir esta propiedad para mejorar el rendimiento */
+    will-change: transform;
+}
+
+/* Reducir la complejidad de las animaciones */
+.form-wrapper {
+    /* Mantener el resto igual */
+    animation: formAppear 0.6s ease-out;
+    /* Añadir esta propiedad para mejorar el rendimiento */
+    will-change: transform, opacity;
+}
+
+/* Simplificar las animaciones */
+@keyframes formAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Optimizar el filtro de desenfoque que consume muchos recursos */
+.form-wrapper {
+    /* Mantener el resto igual */
+    background: rgba(30, 41, 59, 0.85); /* Aumentar opacidad para compensar la falta de desenfoque */
+    /* Usar el filtro de desenfoque solo en dispositivos de alto rendimiento */
+}
+
+@media (min-width: 992px) {
+    .form-wrapper {
+        backdrop-filter: blur(5px); /* Reducir el radio de desenfoque */
+        -webkit-backdrop-filter: blur(5px);
+    }
+}
