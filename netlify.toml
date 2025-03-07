@@ -1,3 +1,9 @@
 [build]
+  publish = "."
   functions = "netlify/functions"
-  publish = "."  # Cambiado de "public" a "." para usar el directorio raíz
+
+[functions]
+  node_bundler = "esbuild"
+
+[build.environment]
+  NODE_VERSION = "16"
