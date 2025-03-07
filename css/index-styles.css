@@ -263,7 +263,7 @@ body {
     animation: pulse 3s infinite;
     position: relative;
     display: inline-block;
-    left: 8%;
+    left: 19%;
     transform: translateX(-50%);
 }
 
@@ -876,7 +876,7 @@ body {
     letter-spacing: 3px;
     position: relative;
     display: inline-block;
-    left: 50%;
+    left: 26%;
     transform: translateX(-50%);
     animation: pulse 3s infinite, glow 3s infinite alternate;
 }
