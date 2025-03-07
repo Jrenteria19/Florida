@@ -47,9 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <a href="settings.html" class="dropdown-item">
                         <i class="fas fa-cog"></i> Configuración
                     </a>
-                    <a href="#" class="dropdown-item logout-link">
+                    <button class="dropdown-item logout-button">
                         <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                    </a>
+                    </button>
                 </div>
             `;
             
@@ -90,24 +90,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         border-radius: 8px;
                         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
                         padding: 10px 0;
-                        min-width: 150px;
-                        z-index: 100;
+                        min-width: 200px;
+                        z-index: 9999;
                         display: none;
                         backdrop-filter: blur(10px);
                         border: 1px solid rgba(255, 255, 255, 0.1);
+                        margin-top: 5px;
                     }
                     .user-profile:hover .user-dropdown {
                         display: block;
                     }
                     .dropdown-item {
-                        display: block;
-                        padding: 8px 15px;
+                        display: flex;
+                        align-items: center;
+                        padding: 10px 15px;
                         color: white;
                         text-decoration: none;
                         transition: background-color 0.3s;
+                        border: none;
+                        background: none;
+                        width: 100%;
+                        text-align: left;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-family: 'Poppins', sans-serif;
+                    }
+                    .dropdown-item i {
+                        margin-right: 10px;
+                        width: 20px;
+                        text-align: center;
+                        color: #bb86fc;
                     }
                     .dropdown-item:hover {
                         background-color: rgba(156, 39, 176, 0.3);
+                    }
+                    .logout-button {
+                        color: #ff5252;
+                    }
+                    .logout-button i {
+                        color: #ff5252;
                     }
                     @media (max-width: 768px) {
                         .user-profile {
@@ -131,12 +152,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             // Reemplazar el contenedor de botones de autenticación con el perfil de usuario
             authButtons.parentNode.replaceChild(userProfileElement, authButtons);
-            // Agregar event listeners
-            const logoutLink = userProfileElement.querySelector('.logout-link');
-            logoutLink.addEventListener('click', function(e) {
-                e.preventDefault();
+            // Agregar event listener específico para el botón de cerrar sesión
+            const logoutButton = userProfileElement.querySelector('.logout-button');
+            logoutButton.addEventListener('click', function() {
+                // Eliminar datos de sesión
                 localStorage.removeItem('floridaRPUser');
-                window.location.reload();
+                // Mostrar mensaje de cierre de sesión
+                const logoutMessage = document.createElement('div');
+                logoutMessage.className = 'logout-message';
+                logoutMessage.textContent = 'Cerrando sesión...';
+                document.body.appendChild(logoutMessage);
+                
+                // Agregar estilos para el mensaje
+                const messageStyle = document.createElement('style');
+                messageStyle.textContent = `
+                    .logout-message {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(30, 41, 59, 0.9);
+                        color: white;
+                        padding: 15px 30px;
+                        border-radius: 8px;
+                        z-index: 9999;
+                        font-weight: 500;
+                        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                    }
+                `;
+                document.head.appendChild(messageStyle);
+                
+                // Recargar la página después de un breve retraso
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
             });
             // Para toggle en móvil
             userProfileElement.addEventListener('click', function(e) {
