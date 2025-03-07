@@ -51,80 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
             checkPasswordStrength(this.value, strengthMeter);
         });
     }
-    // Add this after the other const declarations
-const ROBLOX_API = 'https://users.roblox.com/v1/usernames/users';
-
-// Add this function after the other helper functions
-async function verifyRobloxUsername(username) {
-    try {
-        const response = await fetch(ROBLOX_API, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                usernames: [username],
-                excludeBannedUsers: true
-            })
-        });
-
-        const data = await response.json();
-        return data.data.length > 0;
-    } catch (error) {
-        console.error('Error verificando usuario de Roblox:', error);
-        return false;
-    }
-}
-
-// Modify the robloxUsername event listener
-robloxUsername.addEventListener('input', async function() {
-    if (this.value.trim().length >= 3) {
-        // Show loading indicator
-        robloxError.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando usuario...';
-        robloxError.style.color = '#ffb700';
-        robloxError.style.display = 'block';
-        
-        const exists = await verifyRobloxUsername(this.value.trim());
-        
-        if (exists) {
-            robloxError.innerHTML = '<i class="fas fa-check"></i> Usuario verificado';
-            robloxError.style.color = 'var(--success-color)';
-            this.classList.remove('input-error');
-        } else {
-            robloxError.innerHTML = '<i class="fas fa-times"></i> Usuario no encontrado';
-            robloxError.style.color = 'var(--error-color)';
-            this.classList.add('input-error');
-        }
-    }
-});
-
-// Modify the form submission validation for Roblox
-registroForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    // Reset errors
-    resetErrors();
-    
-    // Validate form
-    let isValid = true;
-    
-    // Validate Roblox username
-    if (!robloxUsername.value.trim()) {
-        showError(robloxUsername, robloxError, 'Por favor, ingresa tu nombre de usuario de Roblox');
-        isValid = false;
-    } else {
-        const exists = await verifyRobloxUsername(robloxUsername.value.trim());
-        if (!exists) {
-            showError(robloxUsername, robloxError, 'El usuario de Roblox no existe');
-            isValid = false;
-        }
-    }
-
-    if (robloxUsername.value.trim().length < 3) {
-        showError(robloxUsername, robloxError, 'El nombre de usuario debe tener al menos 3 caracteres');
-        isValid = false;
-    }
-    
+   
     // Validate Discord username
     if (!discordUsername.value.trim()) {
         showError(discordUsername, discordError, 'Por favor, ingresa tu nombre de usuario de Discord');
@@ -320,4 +247,3 @@ registroForm.addEventListener('submit', async function(e) {
             document.querySelector('.checkbox-group').classList.remove('checked');
         }
     });
-});
