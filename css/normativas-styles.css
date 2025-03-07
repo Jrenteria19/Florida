@@ -1,0 +1,896 @@
+/* Mejoras para la página de normativas con estilo similar al código penal y agencia */
+:root {
+    --primary-color: #ff69b4;
+    --secondary-color: #9c27b0;
+    --bg-dark: #121212;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --border-light: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background: linear-gradient(135deg, rgba(42, 8, 69, 0.95) 0%, rgba(0, 0, 0, 0.95) 100%);
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.normativas-section {
+    padding: 6rem 2rem 4rem;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Mejora del título de sección */
+.section-title {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 2.5rem;
+    position: relative;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+}
+
+.section-title::before {
+    content: '';
+    width: 50px;
+    height: 50px;
+    background: url('../imgs/FloridaRp.png') no-repeat center center;
+    background-size: contain;
+    animation: float 6s infinite ease-in-out;
+}
+
+.section-subtitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: white;
+    position: relative;
+    padding-left: 2.5rem;
+}
+
+.section-subtitle i {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    font-size: 1.8rem;
+}
+
+/* Mejora de las pestañas */
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+.tab-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tab-btn:hover::before,
+.tab-btn.active::before {
+    opacity: 1;
+}
+
+.tab-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tab-btn.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+}
+
+.tab-btn i {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover i,
+.tab-btn.active i {
+    color: white;
+    transform: scale(1.2);
+}
+
+/* Mejora del contenido de las pestañas */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mejora de las tarjetas de reglas */
+.rule-card {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.rule-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+}
+
+/* Mejora de los elementos de reglas */
+.rule-item {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rule-item h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.rule-item h3 i {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+.rule-details {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.rule-details li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+/* Estilos para las nuevas reglas de avatares y vehículos */
+.rule-details li em {
+    opacity: 0.8;
+    font-size: 0.9em;
+    display: block;
+    margin-top: 0.3rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.rule-details li i.fas-tire:before {
+    content: '\f634'; /* Usando el icono de rueda de FontAwesome */
+}
+
+.rule-details li i.fas-mountain:before {
+    content: '\f6fc'; /* Usando el icono de montaña de FontAwesome */
+}
+
+/* Efecto de resaltado para comandos de rol */
+.rule-details span code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-family: monospace;
+    color: var(--primary-color);
+    font-size: 0.9em;
+}
+
+/* Animación para el icono de colisión */
+.rule-details li:hover i.fa-car-crash {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px) rotate(-5deg); }
+    50% { transform: translateX(3px) rotate(5deg); }
+    75% { transform: translateX(-3px) rotate(-5deg); }
+}
+
+/* Animación para el icono de rueda pinchada */
+.rule-details li:hover i.fa-tire {
+    animation: deflate 1s ease-in-out;
+}
+
+@keyframes deflate {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.8); }
+    100% { transform: scale(1); }
+}
+
+/* Mejora visual para la sección de vehículos */
+.rule-item:has(i.fa-car) {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(30, 41, 59, 0.8));
+    border-left: 3px solid var(--primary-color);
+}
+
+/* Mejora visual para la sección de avatares */
+.rule-item:has(i.fa-user-alt) {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(30, 41, 59, 0.8));
+    border-left: 3px solid var(--secondary-color);
+}
+
+.sanction-phase {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sanction-phase h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.sanction-phase h3 i {
+    color: var(--primary-color);
+}
+
+.sanction-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sanction-list li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sanction-list li:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(5px);
+}
+
+.sanction-list li i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Mejora de las secciones de CK */
+.ck-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ck-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.ck-section h3 i {
+    color: var(--primary-color);
+}
+
+.ck-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ck-list li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.ck-list li:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(5px);
+}
+
+.ck-list li i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Mejora de las zonas seguras */
+.safe-zones-section {
+    margin-bottom: 2rem;
+}
+
+.safe-zones-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.safe-zones-section h3 i {
+    color: var(--primary-color);
+}
+
+.safe-zones-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.safe-zones-list li {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.safe-zones-list li:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.safe-zones-list li i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    min-width: 20px;
+    text-align: center;
+}
+/* Mejora de las secciones de robos */
+.robbery-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.robbery-category {
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.robbery-category h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.robbery-category h3 i {
+    color: var(--primary-color);
+}
+
+.robbery-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.robbery-section h4 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.robbery-section h4 i {
+    color: var(--primary-color);
+}
+
+.robbery-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.stat {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Mejora de las secciones de facciones */
+.faction-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.faction-section::after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 80px;
+    height: 80px;
+    background: url('../imgs/FloridaRp.png') no-repeat center center;
+    background-size: contain;
+    opacity: 0.05;
+    z-index: 0;
+}
+
+.faction-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    position: relative;
+    z-index: 1;
+}
+
+.faction-section h3 i {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+}
+
+.faction-types {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.faction-types li {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.faction-types li:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.faction-types li i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Mejora de la sección de Discord */
+.discord-system {
+    background: linear-gradient(135deg, rgba(114, 137, 218, 0.1), rgba(0, 0, 0, 0.2));
+    position: relative;
+    overflow: hidden;
+}
+
+.discord-system::before {
+    content: '\f392';
+    font-family: 'Font Awesome 5 Brands';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 10rem;
+    color: rgba(114, 137, 218, 0.05);
+    z-index: 0;
+}
+
+.discord-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.info-card {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-card h4 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-card h4 i {
+    color: var(--primary-color);
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.info-list li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.info-list li:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(5px);
+}
+
+.info-list li i {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Mejora de los requisitos */
+.requirement-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.requirement-list li {
+    position: relative;
+    padding: 0.5rem 0.5rem 0.5rem 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.requirement-list li::before {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+/* Mejora del mapa interactivo */
+.safe-zones-map {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.safe-zones-map h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.safe-zones-map h3 i {
+    color: var(--primary-color);
+}
+
+.map-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    height: 400px;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.map-container:hover img {
+    transform: scale(1.02);
+}
+
+/* Animación de flotación */
+@keyframes float {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Marca de agua de FloridaRP */
+.florida-watermark {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 150px;
+    height: 150px;
+    background: url('../imgs/FloridaRp.png') no-repeat center center;
+    background-size: contain;
+    opacity: 0.05;
+    z-index: -1;
+    pointer-events: none;
+    animation: float 6s infinite ease-in-out;
+}
+/* Estilos para los nuevos elementos creados por JavaScript */
+
+/* Badge de FloridaRP */
+.florida-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: url('../imgs/FloridaRp.png') no-repeat center center;
+    background-size: contain;
+    opacity: 0.2;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.rule-card:hover .florida-badge,
+.faction-section:hover .florida-badge {
+    opacity: 0.5;
+    transform: rotate(10deg) scale(1.2);
+}
+
+/* Botón para volver arriba */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 120px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.scroll-top-btn:hover {
+    transform: translateY(-5px) scale(1.1) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Resaltado de palabras clave */
+.keyword-highlight {
+    color: var(--primary-color);
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+}
+
+.keyword-highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    transform-origin: bottom right;
+}
+
+.keyword-highlight:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+
+/* Partículas en el fondo */
+.particles-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float-particle infinite linear;
+}
+
+@keyframes float-particle {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.3;
+    }
+    90% {
+        opacity: 0.3;
+    }
+    100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Título con acento mejorado */
+.title-accent {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    display: inline-block;
+    padding: 0 5px;
+}
+
+.title-accent::before {
+    content: '';
+    position: absolute;
+    width: 110%;
+    height: 10px;
+    background: rgba(255, 105, 180, 0.2);
+    bottom: 5px;
+    left: -5%;
+    z-index: -1;
+    border-radius: 10px;
+}

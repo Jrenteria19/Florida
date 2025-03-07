@@ -1,0 +1,508 @@
+/* Mejoras para la página de agencia con estilo similar al código penal */
+:root {
+    --primary-color: #ff69b4;
+    --secondary-color: #9c27b0;
+    --bg-dark: #121212;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --border-light: rgba(255, 255, 255, 0.1);
+}
+
+.section {
+    padding: 6rem 2rem 4rem;
+    background: linear-gradient(135deg, rgba(42, 8, 69, 0.95) 0%, rgba(0, 0, 0, 0.95) 100%);
+    min-height: 100vh;
+}
+
+/* Mejora del título de sección */
+.section-title {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 2.5rem;
+    position: relative;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding-bottom: 1.5rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+}
+
+.title-accent {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    display: inline-block;
+}
+
+.title-accent::before {
+    content: '';
+    position: absolute;
+    width: 110%;
+    height: 10px;
+    background: rgba(255, 105, 180, 0.2);
+    bottom: 5px;
+    left: -5%;
+    z-index: -1;
+    border-radius: 10px;
+}
+
+/* Mejora del contenedor de búsqueda */
+.search-container {
+    margin: 0 auto 2.5rem;
+    position: relative;
+    max-width: 1000px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.search-box {
+    position: relative;
+    width: 100%;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 1.2rem 3rem 1.2rem 1.8rem;
+    border-radius: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    font-family: 'Poppins', sans-serif;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
+    transform: translateY(-2px);
+}
+
+.search-box i {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus + i {
+    color: white;
+}
+
+/* Mejora de los botones de filtro */
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.filter-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.filter-btn:hover::before,
+.filter-btn.active::before {
+    opacity: 1;
+}
+
+.filter-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.filter-btn.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+}
+/* Mejora del grid de vehículos */
+.vehicles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+/* Enhanced vehicle card styles */
+.vehicle-card {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.vehicle-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, #ff69b4, #9c27b0);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.vehicle-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.vehicle-card:hover::before {
+    opacity: 1;
+}
+
+.vehicle-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.vehicle-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%);
+    z-index: 1;
+}
+
+.vehicle-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.5s ease;
+}
+
+.vehicle-card:hover .vehicle-image img {
+    transform: scale(1.1);
+}
+
+/* FloridaRP badge */
+.florida-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: url('../imgs/FloridaRp.png') no-repeat center center;
+    background-size: contain;
+    z-index: 2;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+}
+
+.vehicle-card:hover .florida-badge {
+    transform: scale(1.2) rotate(10deg);
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(255, 105, 180, 0.7));
+}
+
+/* Category label */
+.category-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 5px 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 2;
+    border-top-right-radius: 8px;
+}
+
+.category-label.baja {
+    background: linear-gradient(135deg, #4CAF50, #8BC34A);
+    color: white;
+}
+
+.category-label.media {
+    background: linear-gradient(135deg, #FF9800, #FFC107);
+    color: #333;
+}
+
+.category-label.alta {
+    background: linear-gradient(135deg, #F44336, #E91E63);
+    color: white;
+}
+
+/* Enhanced vehicle info */
+.vehicle-info {
+    padding: 1.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.vehicle-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+    display: flex;
+    align-items: center;
+    line-height: 1.3;
+    position: relative;
+    padding-left: 1.8rem;
+}
+
+.vehicle-name::before {
+    content: '\f1b9';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    color: #ff69b4;
+    font-size: 1.2rem;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.vehicle-card:hover .vehicle-name::before {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.vehicle-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vehicle-price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ff69b4;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vehicle-price i {
+    font-size: 1rem;
+    color: #9c27b0;
+}
+
+.vehicle-divider {
+    height: 1px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+    margin: 0.2rem 0;
+}
+
+.vehicle-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.vehicle-tag {
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tag-premium {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    color: #000;
+}
+
+.tag-free {
+    background: linear-gradient(45deg, #4CAF50, #8BC34A);
+    color: white;
+}
+
+.tag-roblox {
+    background: linear-gradient(45deg, #2196F3, #03A9F4);
+    color: white;
+}
+
+.tag-baja {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.tag-media {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.tag-alta {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.vehicle-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.florida-brand {
+    font-weight: 700;
+    color: #ff69b4;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+.florida-brand::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #ff69b4, #9c27b0);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.vehicle-card:hover .florida-brand::after {
+    opacity: 1;
+}
+
+/* Florida logo watermark for no results */
+.florida-logo-watermark {
+    width: 100px;
+    height: 100px;
+    margin: 20px auto 0;
+    background: url('../imgs/FloridaRp.png') no-repeat center center;
+    background-size: contain;
+    opacity: 0.3;
+    animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+}
+.section::after {
+    content: '';
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 120px;
+    height: 120px;
+    background: url('../imgs/FloridaRp.png') no-repeat center center;
+    background-size: contain;
+    opacity: 0.1;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .vehicles-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 2.5rem;
+    }
+    
+    .filter-buttons {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        justify-content: flex-start;
+    }
+    
+    .filter-btn {
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .section {
+        padding: 5rem 1rem 3rem;
+    }
+    
+    .vehicles-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .vehicle-image {
+        height: 160px;
+    }
+}
