@@ -24,10 +24,15 @@ exports.handler = async function(event, context) {
     try {
         requestBody = JSON.parse(event.body);
     } catch (error) {
+        console.error('Error parsing request body:', error);
         return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ success: false, message: 'Invalid request body' })
+            body: JSON.stringify({ 
+                success: false, 
+                message: 'Invalid request body',
+                error: error.message 
+            })
         };
     }
     
@@ -44,6 +49,15 @@ exports.handler = async function(event, context) {
     // Connect to database
     let connection;
     try {
+        // Log environment variables (without exposing sensitive data)
+        console.log('Environment check:', {
+            TIDB_HOST_exists: !!process.env.TIDB_HOST,
+            TIDB_PORT_exists: !!process.env.TIDB_PORT,
+            TIDB_USER_exists: !!process.env.TIDB_USER,
+            TIDB_PASSWORD_exists: !!process.env.TIDB_PASSWORD,
+            TIDB_DATABASE_exists: !!process.env.TIDB_DATABASE
+        });
+        
         connection = await mysql.createConnection({
             host: process.env.TIDB_HOST,
             port: process.env.TIDB_PORT,
@@ -52,6 +66,30 @@ exports.handler = async function(event, context) {
             database: process.env.TIDB_DATABASE,
             ssl: process.env.TIDB_SSL === 'true' ? { rejectUnauthorized: true } : false
         });
+        
+        // Check if the usuario table exists, if not create it
+        try {
+            await connection.execute(`
+                CREATE TABLE IF NOT EXISTS usuario (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    roblox_name VARCHAR(255) NOT NULL UNIQUE,
+                    discord_name VARCHAR(255) NOT NULL UNIQUE,
+                    password VARCHAR(255) NOT NULL,
+                    created_at DATETIME NOT NULL
+                )
+            `);
+        } catch (tableError) {
+            console.error('Error creating table:', tableError);
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ 
+                    success: false, 
+                    message: 'Error creating database table', 
+                    error: tableError.message 
+                })
+            };
+        }
         
         // Check if Roblox username already exists
         const [robloxRows] = await connection.execute(
@@ -114,12 +152,18 @@ exports.handler = async function(event, context) {
             headers,
             body: JSON.stringify({ 
                 success: false, 
-                message: 'Error al registrar el usuario. Por favor, inténtalo de nuevo.' 
+                message: 'Error al registrar el usuario', 
+                error: error.message,
+                stack: error.stack
             })
         };
     } finally {
         if (connection) {
-            await connection.end();
+            try {
+                await connection.end();
+            } catch (err) {
+                console.error('Error closing connection:', err);
+            }
         }
     }
 };

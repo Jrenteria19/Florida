@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
     messageContainer.className = 'validation-message';
     messageContainer.style.display = 'none';
     document.querySelector('.form-header').appendChild(messageContainer);
-    
     // Show validation message
     function showMessage(message, isError = true) {
         messageContainer.textContent = message;
@@ -37,20 +36,17 @@ document.addEventListener('DOMContentLoaded', function() {
             messageContainer.style.color = 'white';
             messageContainer.style.border = '1px solid #45a049';
         }
-        
         // Auto hide after 5 seconds
         setTimeout(() => {
             messageContainer.style.display = 'none';
         }, 5000);
     }
-    
     // Form elements
     const robloxInput = document.getElementById('robloxName');
     const discordInput = document.getElementById('discordName');
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirmPassword');
     const form = document.getElementById('registrationForm');
-    
     // Add validation status indicators
     function addValidationIndicator(inputElement) {
         const container = inputElement.parentElement;
@@ -71,27 +67,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return indicator;
     }
-    
     // Create indicators
     const robloxIndicator = addValidationIndicator(robloxInput);
     const discordIndicator = addValidationIndicator(discordInput);
     const passwordIndicator = addValidationIndicator(passwordInput);
     const confirmPasswordIndicator = addValidationIndicator(confirmPasswordInput);
-    
     // Basic validation for usernames
     function validateUsername(username) {
         // At least 3 characters, alphanumeric and underscores
         const usernameRegex = /^[a-zA-Z0-9_]{3,32}$/;
         return usernameRegex.test(username);
     }
-
     // Validate password
     function validatePassword(password) {
         // At least 8 characters, 1 uppercase, and 1 number
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
         return passwordRegex.test(password);
     }
-    
     // Update indicator
     function updateIndicator(indicator, isValid) {
         if (isValid) {
@@ -102,10 +94,10 @@ document.addEventListener('DOMContentLoaded', function() {
             indicator.style.color = '#ff5252';
         }
     }
-    
     // Check if username already exists
     async function checkUsernameExists(type, username) {
         try {
+            console.log(`Checking if ${type} username exists: ${username}`);
             const response = await fetch('/.netlify/functions/check-user', {
                 method: 'POST',
                 headers: {
@@ -117,26 +109,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
             
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                console.error(`Server error checking ${type}:`, errorData);
+                showMessage(`Error al verificar el nombre de usuario: ${errorData.message || 'Error del servidor'}`);
+                return false;
+            }
+            
             const data = await response.json();
             return data.exists;
         } catch (error) {
             console.error(`Error checking ${type} username:`, error);
+            showMessage(`Error de conexión: ${error.message}`);
             return false;
         }
     }
-    
     // Real-time validation for Roblox username
     robloxInput.addEventListener('input', function() {
         const isValid = validateUsername(this.value.trim());
         updateIndicator(robloxIndicator, isValid);
     });
-    
     // Real-time validation for Discord username
     discordInput.addEventListener('input', function() {
         const isValid = validateUsername(this.value.trim());
         updateIndicator(discordIndicator, isValid);
     });
-    
     // Real-time validation for password
     passwordInput.addEventListener('input', function() {
         const isValid = validatePassword(this.value);
@@ -148,13 +145,11 @@ document.addEventListener('DOMContentLoaded', function() {
             updateIndicator(confirmPasswordIndicator, passwordsMatch);
         }
     });
-    
     // Real-time validation for confirm password
     confirmPasswordInput.addEventListener('input', function() {
         const passwordsMatch = this.value === passwordInput.value;
         updateIndicator(confirmPasswordIndicator, passwordsMatch);
     });
-    
     // Form submission
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -192,6 +187,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
+            // Show loading message
+            showMessage('Procesando registro...', false);
+            
             // Check if Roblox username already exists
             const robloxExists = await checkUsernameExists('roblox', robloxName);
             if (robloxExists) {
@@ -219,6 +217,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
             
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                console.error('Registration error:', errorData);
+                showMessage(`❌ Error al registrar: ${errorData.message || 'Error del servidor'}`);
+                return;
+            }
             const result = await response.json();
             
             if (result.success) {

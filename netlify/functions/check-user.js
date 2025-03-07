@@ -23,10 +23,15 @@ exports.handler = async function(event, context) {
     try {
         requestBody = JSON.parse(event.body);
     } catch (error) {
+        console.error('Error parsing request body:', error);
         return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ success: false, message: 'Invalid request body' })
+            body: JSON.stringify({ 
+                success: false, 
+                message: 'Invalid request body',
+                error: error.message 
+            })
         };
     }
     
@@ -36,13 +41,25 @@ exports.handler = async function(event, context) {
         return {
             statusCode: 400,
             headers,
-            body: JSON.stringify({ success: false, message: 'Missing required fields' })
+            body: JSON.stringify({ 
+                success: false, 
+                message: 'Missing required fields' 
+            })
         };
     }
     
     // Connect to database
     let connection;
     try {
+        // Log environment variables (without exposing sensitive data)
+        console.log('Environment check:', {
+            TIDB_HOST_exists: !!process.env.TIDB_HOST,
+            TIDB_PORT_exists: !!process.env.TIDB_PORT,
+            TIDB_USER_exists: !!process.env.TIDB_USER,
+            TIDB_PASSWORD_exists: !!process.env.TIDB_PASSWORD,
+            TIDB_DATABASE_exists: !!process.env.TIDB_DATABASE
+        });
+        
         connection = await mysql.createConnection({
             host: process.env.TIDB_HOST,
             port: process.env.TIDB_PORT,
@@ -79,11 +96,20 @@ exports.handler = async function(event, context) {
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ success: false, message: 'Database error' })
+            body: JSON.stringify({ 
+                success: false, 
+                message: 'Database error', 
+                error: error.message,
+                stack: error.stack
+            })
         };
     } finally {
         if (connection) {
-            await connection.end();
+            try {
+                await connection.end();
+            } catch (err) {
+                console.error('Error closing connection:', err);
+            }
         }
     }
 };
