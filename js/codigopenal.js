@@ -44,90 +44,166 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Define articles array at the top level
 const articles = [
+    // Delitos graves (major)
     {
         id: "Art. 1",
-        description: "Homicidio en primer grado",
-        sanction: "30 años de prisión",
+        description: "Homicidio",
+        sanction: "30 años de prisión + $10,000,000 CLP",
         category: "major"
     },
     {
         id: "Art. 2",
-        description: "Robo con violencia",
-        sanction: "10 años de prisión",
+        description: "Robo a mano armada",
+        sanction: "10 años de prisión + $5,000,000 CLP + Retención del vehículo",
         category: "major"
     },
     {
         id: "Art. 3",
-        description: "Hurto menor",
-        sanction: "6 meses de prisión",
-        category: "minor"
+        description: "Secuestro",
+        sanction: "20 años de prisión + $8,000,000 CLP",
+        category: "major"
     },
     {
         id: "Art. 4",
-        description: "Conducir bajo los efectos del alcohol",
-        sanction: "Multa de $5,000",
-        category: "infraction"
+        description: "Agresión con arma blanca",
+        sanction: "15 años de prisión + $6,000,000 CLP + Retención del arma",
+        category: "major"
     },
     {
         id: "Art. 5",
-        description: "Vandalismo",
-        sanction: "1 año de prisión",
-        category: "minor"
+        description: "Huida de la justicia",
+        sanction: "5 años de prisión + $3,000,000 CLP + Retención del vehículo",
+        category: "major"
     },
     {
         id: "Art. 6",
-        description: "Exceso de velocidad",
-        sanction: "Multa de $1,000",
-        category: "infraction"
-    },
-    {
-        id: "Art. 1.1",
-        description: "Asesinato premeditado",
-        sanction: "Cadena perpetua",
-        category: "major"
-    },
-    {
-        id: "Art. 1.2",
-        description: "Homicidio involuntario",
-        sanction: "15 años de prisión",
-        category: "major"
-    },
-    {
-        id: "Art. 2.1",
-        description: "Robo a mano armada",
-        sanction: "20 años de prisión",
-        category: "major"
-    },
-    {
-        id: "Art. 2.2",
-        description: "Hurto menor ($500 o menos)",
-        sanction: "1 año de prisión + Multa $1,000",
-        category: "minor"
-    },
-    {
-        id: "Art. 3.1",
-        description: "Tráfico de drogas",
-        sanction: "25 años de prisión",
-        category: "major"
-    },
-    {
-        id: "Art. 3.2",
-        description: "Posesión de drogas",
-        sanction: "5 años de prisión",
-        category: "minor"
-    },
-    {
-        id: "Art. 4.1",
         description: "Conducción temeraria",
-        sanction: "Multa $2,000 + Suspensión de licencia",
+        sanction: "2 años de prisión + $2,000,000 CLP + Suspensión de licencia de conducir por 1 año",
+        category: "major"
+    },
+    {
+        id: "Art. 7",
+        description: "Suplantación de identidad",
+        sanction: "5 años de prisión + $4,000,000 CLP",
+        category: "major"
+    },
+
+    // Delitos menores (minor)
+    {
+        id: "Art. 8",
+        description: "Hurto menor",
+        sanction: "6 meses de prisión + $500,000 CLP",
+        category: "minor"
+    },
+    {
+        id: "Art. 9",
+        description: "Vandalismo",
+        sanction: "1 año de prisión + $1,000,000 CLP",
+        category: "minor"
+    },
+    {
+        id: "Art. 10",
+        description: "Agresión física leve",
+        sanction: "6 meses de prisión + $500,000 CLP",
+        category: "minor"
+    },
+    {
+        id: "Art. 11",
+        description: "Daño a propiedad privada",
+        sanction: "1 año de prisión + $2,000,000 CLP",
+        category: "minor"
+    },
+    {
+        id: "Art. 12",
+        description: "Falsificación de documentos",
+        sanction: "2 años de prisión + $3,000,000 CLP",
+        category: "minor"
+    },
+    {
+        id: "Art. 13",
+        description: "Intento de robo",
+        sanction: "1 año de prisión + $1,000,000 CLP",
+        category: "minor"
+    },
+    {
+        id: "Art. 14",
+        description: "Evitar ser identificado",
+        sanction: "6 meses de prisión + $500,000 CLP",
+        category: "minor"
+    },
+
+    // Infracciones (infraction)
+    {
+        id: "Art. 15",
+        description: "Conducir bajo los efectos del alcohol",
+        sanction: "Multa de $5,000,000 CLP + Suspensión de licencia de conducir por 1 año",
         category: "infraction"
     },
     {
-        id: "Art. 4.2",
+        id: "Art. 16",
+        description: "Exceso de velocidad",
+        sanction: "Multa de $1,000,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 17",
         description: "Estacionamiento en zona prohibida",
-        sanction: "Multa $200",
+        sanction: "Multa $200,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 18",
+        description: "No usar cinturón de seguridad",
+        sanction: "Multa $100,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 19",
+        description: "No respetar señales de tránsito",
+        sanction: "Multa $150,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 20",
+        description: "Uso excesivo del claxon",
+        sanction: "Multa $50,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 21",
+        description: "Circular sin luces en la noche",
+        sanction: "Multa $100,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 22",
+        description: "No respetar el paso peatonal",
+        sanction: "Multa $200,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 23",
+        description: "Conducir sin licencia",
+        sanction: "Multa $1,000,000 CLP + Retención del vehículo",
+        category: "infraction"
+    },
+    {
+        id: "Art. 24",
+        description: "No portar documentación del vehículo",
+        sanction: "Multa $80,000 CLP",
+        category: "infraction"
+    },
+    {
+        id: "Art. 25",
+        description: "Circular en sentido contrario",
+        sanction: "Multa $300,000 CLP + Suspensión de licencia de conducir por 3 meses",
+        category: "infraction"
+    },
+    {
+        id: "Art. 26",
+        description: "Evadir un control policial",
+        sanction: "Multa $500,000 CLP + Retención del vehículo",
         category: "infraction"
     }
 ];
