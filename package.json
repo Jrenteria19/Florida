@@ -1,15 +1,15 @@
 {
-  "name": "floridaroleplay",
-  "version": "1.0.0",
-  "description": "Sitio web de Florida Roleplay",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "engines": {
-    "node": ">=14.0.0"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
+    "name": "floridaroleplay",
+    "version": "1.0.0",
+    "description": "Florida Roleplay Website",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js"
+    },
+    "engines": {
+      "node": ">=14.0.0"
+    },
+    "dependencies": {
+      "express": "^4.18.2"
+    }
   }
-}
